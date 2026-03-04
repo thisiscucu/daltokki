@@ -24,6 +24,7 @@
         .scroll-mt-4 { scroll-margin-top: 1rem; }
         .tab-active { border-bottom: 3px solid #facc15; color: #facc15 !important; }
         .min-px { padding-left: 2px !important; padding-right: 2px !important; }
+        table { width: 100%; border-spacing: 0; border-collapse: collapse; table-layout: auto !important; }
     </style>
 </head>
 <body class="pb-10 text-left">
@@ -45,7 +46,7 @@
     </section>
 
     <section class="mx-4 bg-white rounded-[1rem] shadow-sm p-5 mt-1 border border-slate-100 font-bold">
-        <div class="flex justify-between items-center mb-5 gap-2">
+        <div class="flex justify-between items-center mb-5 gap-2 text-left">
             <h2 id="calendar-title" class="font-black text-lg text-slate-800 tracking-tight shrink-0">Schedule</h2>
             <div class="flex items-center justify-center gap-1.5">
                 <button onclick="moveMonth(-1)" class="text-yellow-500 px-1 text-xl font-bold">◀</button>
@@ -54,7 +55,7 @@
             </div>
             <button onclick="openRaceModal()" class="bg-yellow-400 text-slate-900 px-3 py-1.5 rounded-full text-[9px] font-black shadow-md uppercase tracking-tighter shrink-0">Add Race</button>
         </div>
-        <div class="calendar-grid text-center text-[10px] font-bold text-slate-300 mb-3 uppercase tracking-widest text-xs">
+        <div class="calendar-grid text-center text-[10px] font-bold text-slate-300 mb-3 uppercase tracking-widest text-xs font-black">
             <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
         </div>
         <div id="calendar-days" class="calendar-grid text-center gap-y-4 text-base font-black text-slate-600"></div>
@@ -72,7 +73,7 @@
                 <button onclick="closeRecordRoom()" class="text-slate-400 text-2xl">×</button>
             </div>
             <div class="flex gap-5 text-[15px] font-black text-slate-400 overflow-x-auto no-scrollbar whitespace-nowrap" id="record-tabs">
-                <button onclick="changeRecordTab('all')" id="tab-all" class="pb-2 tab-active">All time</button>
+                <button onclick="changeRecordTab('all')" id="tab-all" class="pb-2">All time</button>
                 <button onclick="changeRecordTab('2026')" id="tab-2026" class="pb-2">26년</button>
                 <button onclick="changeRecordTab('2025')" id="tab-2025" class="pb-2">25년</button>
                 <button onclick="changeRecordTab('prev')" id="tab-prev" class="pb-2">이전</button>
@@ -84,15 +85,15 @@
                 <span id="record-count-label" class="text-[10px] text-slate-400 font-bold uppercase tracking-widest text-xs">Record Table</span>
                 <button id="add-record-btn" onclick="openAddRecordModal()" class="bg-slate-900 text-white px-3 py-1.5 rounded-lg text-[10px] font-black hidden">기록 추가하기</button>
             </div>
-            <table class="w-full text-left border-collapse min-w-[360px] table-fixed">
-                <thead id="record-thead">
+            <table class="w-full text-left border-collapse border-none">
+                <thead>
                     <tr class="text-[10px] text-slate-400 border-b border-slate-100 font-black">
-                        <th class="py-3 cursor-pointer min-px w-[80px]" onclick="sortRecords('name')">Name ↕</th>
+                        <th class="py-3 cursor-pointer min-px" onclick="sortRecords('name')">Name ↕</th>
                         <th class="py-3 cursor-pointer min-px" onclick="sortRecords('5k')">5K ↕</th>
                         <th class="py-3 cursor-pointer min-px" onclick="sortRecords('10k')">10K ↕</th>
                         <th class="py-3 cursor-pointer min-px" onclick="sortRecords('half')">Half ↕</th>
                         <th class="py-3 cursor-pointer min-px" onclick="sortRecords('full')">Full ↕</th>
-                        <th class="py-3 text-center min-px w-[70px]" id="th-action"></th>
+                        <th class="py-3 text-center min-px w-[80px]" id="th-action"></th>
                     </tr>
                 </thead>
                 <tbody id="record-body" class="text-sm font-bold text-slate-700"></tbody>
@@ -100,24 +101,8 @@
         </div>
     </div>
 
-    <div id="add-record-modal" class="fixed inset-0 bg-black/70 backdrop-blur-md hidden z-[70] flex items-center justify-center p-6 text-left">
-        <div class="bg-white w-full max-w-sm rounded-[1rem] p-8 shadow-2xl">
-            <h2 id="rec-modal-title" class="text-xl font-black mb-6 text-slate-800 uppercase">Update Record</h2>
-            <input type="text" id="rec-name" placeholder="이름" class="w-full bg-slate-50 border-none p-4 rounded-lg mb-4 outline-none font-bold shadow-inner">
-            <div class="grid grid-cols-2 gap-3 mb-6">
-                <input type="text" id="rec-5k" maxlength="5" oninput="formatRecord(this, 'short')" placeholder="5K (00:00)" class="bg-slate-50 border-none p-3 rounded-lg outline-none text-sm shadow-inner record-font">
-                <input type="text" id="rec-10k" maxlength="5" oninput="formatRecord(this, 'short')" placeholder="10K (00:00)" class="bg-slate-50 border-none p-3 rounded-lg outline-none text-sm shadow-inner record-font">
-                <input type="text" id="rec-half" maxlength="7" oninput="formatRecord(this, 'long')" placeholder="Half (0:00:00)" class="bg-slate-50 border-none p-3 rounded-lg outline-none text-sm shadow-inner record-font">
-                <input type="text" id="rec-full" maxlength="7" oninput="formatRecord(this, 'long')" placeholder="Full (0:00:00)" class="bg-slate-50 border-none p-3 rounded-lg outline-none text-sm shadow-inner record-font">
-            </div>
-            <div class="flex gap-3">
-                <button onclick="closeAddRecordModal()" class="flex-1 py-4 font-black text-slate-400 text-sm uppercase">Cancel</button>
-                <button onclick="saveUserRecord()" class="flex-1 bg-yellow-400 text-slate-900 py-4 rounded-xl font-black shadow-lg text-sm uppercase">Save</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="admin-modal" class="fixed inset-0 bg-black/70 backdrop-blur-md hidden z-50 flex items-center justify-center p-6 text-left"><div class="bg-white w-full max-w-md rounded-[1rem] p-8 shadow-2xl max-h-[90vh] overflow-y-auto"><h2 class="text-xl font-black mb-4 text-slate-800 uppercase">Data Manager</h2><textarea id="bulk-json-input" placeholder='JSON data...' class="w-full h-48 bg-slate-50 border-none p-4 rounded-lg mb-4 outline-none text-[10px] font-mono shadow-inner"></textarea><div class="grid grid-cols-2 gap-3 mb-6 font-black"><button onclick="importData()" class="bg-slate-900 text-white py-4 rounded-xl shadow-lg">Import</button><button onclick="exportData()" class="bg-yellow-400 text-slate-900 py-4 rounded-xl shadow-lg">Export</button></div><button onclick="closeAdminModal()" class="w-full py-2 font-black text-slate-400 uppercase text-xs">Close</button></div></div>
+    <div id="add-record-modal" class="fixed inset-0 bg-black/70 backdrop-blur-md hidden z-[70] flex items-center justify-center p-6 text-left"><div class="bg-white w-full max-w-sm rounded-[1rem] p-8 shadow-2xl"><h2 id="rec-modal-title" class="text-xl font-black mb-6 text-slate-800 uppercase">Update Record</h2><input type="text" id="rec-name" placeholder="이름" class="w-full bg-slate-50 border-none p-4 rounded-lg mb-4 outline-none font-bold shadow-inner"><div class="grid grid-cols-2 gap-3 mb-6"><input type="text" id="rec-5k" placeholder="5K" oninput="formatRecord(this, 'short')" class="bg-slate-50 border-none p-3 rounded-lg outline-none text-sm shadow-inner record-font"><input type="text" id="rec-10k" placeholder="10K" oninput="formatRecord(this, 'short')" class="bg-slate-50 border-none p-3 rounded-lg outline-none text-sm shadow-inner record-font"><input type="text" id="rec-half" placeholder="Half" oninput="formatRecord(this, 'long')" class="bg-slate-50 border-none p-3 rounded-lg outline-none text-sm shadow-inner record-font"><input type="text" id="rec-full" placeholder="Full" oninput="formatRecord(this, 'long')" class="bg-slate-50 border-none p-3 rounded-lg outline-none text-sm shadow-inner record-font"></div><div class="flex gap-3"><button onclick="closeAddRecordModal()" class="flex-1 py-4 font-black text-slate-400 text-sm uppercase">Cancel</button><button onclick="saveUserRecord()" class="flex-1 bg-yellow-400 text-slate-900 py-4 rounded-xl font-black shadow-lg text-sm uppercase">Save</button></div></div></div>
+    <div id="admin-modal" class="fixed inset-0 bg-black/70 backdrop-blur-md hidden z-50 flex items-center justify-center p-6 text-left"><div class="bg-white w-full max-w-md rounded-[1rem] p-8 shadow-2xl max-h-[90vh] overflow-y-auto"><h2 class="text-xl font-black mb-4 text-slate-800 uppercase">Data Manager</h2><textarea id="bulk-json-input" placeholder='JSON data...' class="w-full h-48 bg-slate-50 border-none p-4 rounded-lg mb-4 outline-none text-[10px] font-mono shadow-inner"></textarea><div class="grid grid-cols-2 gap-3 mb-6"><button onclick="importData()" class="bg-slate-900 text-white py-4 rounded-xl shadow-lg font-black text-xs">Import</button><button onclick="exportData()" class="bg-yellow-400 text-slate-900 py-4 rounded-xl shadow-lg font-black text-xs">Export</button></div><button onclick="closeAdminModal()" class="w-full py-2 font-black text-slate-400 uppercase text-xs">Close</button></div></div>
     <div id="race-modal" class="fixed inset-0 bg-black/70 backdrop-blur-md hidden z-50 flex items-center justify-center p-6 text-left"><div class="bg-white w-full max-w-sm rounded-[1rem] p-8 shadow-2xl"><h2 id="race-modal-title" class="text-xl font-black mb-6 text-slate-800 uppercase">New Race</h2><input type="text" id="new-race-name" placeholder="대회 명칭" class="w-full bg-slate-50 border-none p-4 rounded-lg mb-3 outline-none text-base font-bold shadow-inner"><input type="text" id="new-race-url" placeholder="URL" class="w-full bg-slate-50 border-none p-4 rounded-lg mb-3 outline-none text-base font-bold shadow-inner"><input type="text" id="new-chat-url" placeholder="Chat URL" class="w-full bg-slate-50 border-none p-4 rounded-lg mb-3 outline-none text-base font-bold shadow-inner"><input type="date" id="new-race-date" required class="w-full bg-slate-50 border-none p-4 rounded-lg mb-4 outline-none text-base font-black shadow-inner"><div class="flex flex-wrap gap-2 mb-6" id="course-checks"><label class="bg-slate-50 px-2 py-2 rounded-lg text-[10px] font-black"><input type="checkbox" value="5K"> 5K</label><label class="bg-slate-50 px-2 py-2 rounded-lg text-[10px] font-black"><input type="checkbox" value="10K"> 10K</label><label class="bg-slate-50 px-2 py-2 rounded-lg text-[10px] font-black"><input type="checkbox" value="Half"> Half</label><label class="bg-slate-50 px-2 py-2 rounded-lg text-[10px] font-black"><input type="checkbox" value="Full"> Full</label><label class="bg-slate-50 px-2 py-2 rounded-lg text-[10px] font-black"><input type="checkbox" value="기타"> 기타</label></div><div class="flex gap-3 font-black"><button onclick="closeRaceModal()" class="flex-1 py-4 text-slate-400 text-sm uppercase">Cancel</button><button onclick="saveRace()" class="flex-1 bg-slate-900 text-white rounded-xl shadow-lg text-sm uppercase">Save</button></div></div></div>
     <div id="join-modal" class="fixed inset-0 bg-black/70 backdrop-blur-md hidden z-50 flex items-center justify-center p-6 text-left"><div class="bg-white w-full max-w-sm rounded-[1rem] p-8 shadow-2xl border-white/20"><h2 id="join-race-title" class="text-xl font-black mb-1 text-slate-800">Runner Info</h2><p id="join-race-date" class="text-xs text-slate-400 mb-6 font-black"></p><input type="text" id="user-name" placeholder="이름" class="w-full bg-slate-50 border-none p-4 rounded-lg mb-4 outline-none text-base font-bold shadow-inner"><div class="flex gap-8 mb-6 font-black text-sm"><label><input type="radio" name="gender" value="남" checked class="accent-slate-900"> 남성</label><label><input type="radio" name="gender" value="여" class="accent-slate-900"> 여성</label></div><select id="user-course" class="w-full bg-slate-50 border-none p-4 rounded-lg mb-8 outline-none text-slate-500 font-black shadow-inner"></select><div class="flex gap-3 font-black"><button onclick="closeJoinModal()" class="flex-1 py-4 font-black text-slate-400 text-sm uppercase">Cancel</button><button onclick="addParticipant()" class="flex-1 bg-yellow-400 text-slate-900 rounded-xl shadow-lg text-sm uppercase">Register</button></div></div></div>
 
@@ -130,28 +115,11 @@
         let currentYear = 2026;
         let currentMonth = new Date().getMonth() + 1;
         let selectedDate = null;
-        let currentRecordTab = 'all';
+        let currentRecordTab = '2026'; // 💡 1. 초기 탭을 2026으로 설정
         let sortKey = 'full';
         let sortDir = 1;
 
         window.onload = () => { initMonthSelect(); fetchData(); };
-
-        // 💡 자동 기호 삽입 함수 (Input Mask)
-        function formatRecord(input, type) {
-            let val = input.value.replace(/[^0-9]/g, ""); // 숫자만 남김
-            let formatted = "";
-            
-            if (type === 'short') { // 5K, 10K (00:00)
-                if (val.length > 2) formatted = val.slice(0, 2) + ":" + val.slice(2, 4);
-                else formatted = val;
-            } else { // Half, Full (0:00:00)
-                if (val.length > 5) formatted = val.slice(0, 1) + ":" + val.slice(1, 3) + ":" + val.slice(3, 5);
-                else if (val.length > 3) formatted = val.slice(0, 1) + ":" + val.slice(1, 3) + ":" + val.slice(3);
-                else if (val.length > 1) formatted = val.slice(0, 1) + ":" + val.slice(1);
-                else formatted = val;
-            }
-            input.value = formatted;
-        }
 
         async function fetchData(keepView = false) {
             const res = await fetch(`${DB_URL}/.json`);
@@ -163,9 +131,14 @@
             if(!document.getElementById('record-modal').classList.contains('hidden')) renderRecords();
         }
 
-        // --- 🏆 기록실 로직 ---
-        function openRecordRoom() { document.getElementById('record-modal').classList.remove('hidden'); renderRecords(); }
+        // --- 기록실 로직 ---
+        function openRecordRoom() { 
+            // 💡 2. 기록실 열 때 2026 탭으로 초기화하여 공백 방지
+            changeRecordTab('2026');
+            document.getElementById('record-modal').classList.remove('hidden'); 
+        }
         function closeRecordRoom() { document.getElementById('record-modal').classList.add('hidden'); }
+        
         function changeRecordTab(tab) { 
             currentRecordTab = tab;
             document.querySelectorAll('#record-tabs button').forEach(b => b.classList.remove('tab-active'));
@@ -198,6 +171,7 @@
                     return best;
                 });
             };
+
             if (currentRecordTab === 'all') { dataToShow = getAllTimeData(); document.getElementById('record-count-label').innerText = `Total Runners: ${dataToShow.length}`; }
             else if (currentRecordTab === 'sub3') { dataToShow = getAllTimeData().filter(r => timeToSeconds(r.full) <= 10799); document.getElementById('record-count-label').innerText = `Sub-3 Runners: ${dataToShow.length} 👑`; }
             else { Object.entries(allData.records[currentRecordTab] || {}).forEach(([name, rec]) => dataToShow.push({ name, ...rec })); document.getElementById('record-count-label').innerText = `${currentRecordTab === 'prev' ? '이전' : currentRecordTab + '년'} Records`; }
@@ -214,27 +188,32 @@
             });
         }
 
+        function formatRecord(input, type) {
+            let val = input.value.replace(/[^0-9]/g, ""); let formatted = "";
+            if (type === 'short') { if (val.length > 2) formatted = val.slice(0, 2) + ":" + val.slice(2, 4); else formatted = val; }
+            else { if (val.length > 5) formatted = val.slice(0, 1) + ":" + val.slice(1, 3) + ":" + val.slice(3, 5); else if (val.length > 3) formatted = val.slice(0, 1) + ":" + val.slice(1, 3) + ":" + val.slice(3); else if (val.length > 1) formatted = val.slice(0, 1) + ":" + val.slice(1); else formatted = val; }
+            input.value = formatted;
+        }
+
         function sortRecords(key) { sortDir = (sortKey === key) ? sortDir * -1 : 1; sortKey = key; renderRecords(); }
         function openAddRecordModal() { ['rec-name','rec-5k','rec-10k','rec-half','rec-full'].forEach(id => { document.getElementById(id).value = ""; if(id==='rec-name') document.getElementById(id).disabled=false; }); document.getElementById('rec-modal-title').innerText = "Update Record"; document.getElementById('add-record-modal').classList.remove('hidden'); }
         function closeAddRecordModal() { document.getElementById('add-record-modal').classList.add('hidden'); }
         function editUserRecord(name) {
             const rec = allData.records[currentRecordTab][name];
-            document.getElementById('rec-modal-title').innerText = "Edit Record";
-            document.getElementById('rec-name').value = name;
-            document.getElementById('rec-name').disabled = true;
+            document.getElementById('rec-modal-title').innerText = "Edit Record"; document.getElementById('rec-name').value = name; document.getElementById('rec-name').disabled = true;
             ['5k','10k','half','full'].forEach(k => document.getElementById(`rec-${k}`).value = rec[k] === "-" ? "" : rec[k]);
             document.getElementById('add-record-modal').classList.remove('hidden');
         }
         async function deleteUserRecord(name) { if(confirm("삭제?")) { if(prompt("삭제 비밀번호") !== MASTER_PW) return; await fetch(`${DB_URL}/records/${currentRecordTab}/${name}.json`, { method: 'DELETE' }); fetchData(); } }
         async function saveUserRecord() {
-            const name = document.getElementById('rec-name').value.trim(); if (!name) return alert("이름 입력!");
+            const name = document.getElementById('rec-name').value.trim(); if (!name) return alert("이름!");
             if (!document.getElementById('rec-name').disabled && allData.records[currentRecordTab] && allData.records[currentRecordTab][name]) return alert("중복!");
             const newRec = { "5k": document.getElementById('rec-5k').value || "-", "10k": document.getElementById('rec-10k').value || "-", "half": document.getElementById('rec-half').value || "-", "full": document.getElementById('rec-full').value || "-" };
             await fetch(`${DB_URL}/records/${currentRecordTab}/${name}.json`, { method: 'PUT', body: JSON.stringify(newRec) });
             closeAddRecordModal(); fetchData();
         }
 
-        // --- 📅 달력/일정 관리 로직 ---
+        // --- 📅 달력 및 일정 로직 ---
         function moveMonth(offset) { currentMonth += offset; if (currentMonth > 12) { currentMonth = 1; currentYear++; } else if (currentMonth < 1) { currentMonth = 12; currentYear--; } document.getElementById('month-select').value = currentMonth; changeMonth(); }
         function changeMonth() { currentMonth = parseInt(document.getElementById('month-select').value); selectedDate = null; renderAll(); }
         function initMonthSelect() { const select = document.getElementById('month-select'); select.innerHTML = ''; for(let i=1; i<=12; i++) { const opt = document.createElement('option'); opt.value = i; opt.innerText = i + '월'; if(i === currentMonth) opt.selected = true; select.appendChild(opt); } }
@@ -257,7 +236,7 @@
             let firstFutureIndex = -1;
             sortedRaces.forEach(([id, race], index) => {
                 if (firstFutureIndex === -1 && race.date >= todayStr) firstFutureIndex = index;
-                container.innerHTML += `<div id="card-${index}" onclick="showDayDetail('${race.date}', true)" class="min-w-[140px] bg-white p-4 rounded-[1rem] shadow-sm border border-slate-100 flex-shrink-0 font-black uppercase ${race.date < todayStr ? 'opacity-40' : ''}"><p class="text-[9px] text-yellow-500 mb-1 font-bold">RACE</p><h4 class="text-slate-800 truncate text-[11px] font-bold">${race.name}</h4><p class="text-[9px] text-slate-400 mt-1 font-black font-bold text-xs">${race.date}</p></div>`;
+                container.innerHTML += `<div id="card-${index}" onclick="showDayDetail('${race.date}', true)" class="min-w-[140px] bg-white p-4 rounded-[1rem] shadow-sm border border-slate-100 flex-shrink-0 font-black uppercase ${race.date < todayStr ? 'opacity-40' : ''}"><p class="text-[9px] text-yellow-500 mb-1 font-bold font-black">RACE</p><h4 class="text-slate-800 truncate text-[11px] font-bold text-left font-black">${race.name}</h4><p class="text-[9px] text-slate-400 mt-1 font-black font-bold text-xs text-left">${race.date}</p></div>`;
             });
             if (firstFutureIndex !== -1) setTimeout(() => { const card = document.getElementById(`card-${firstFutureIndex}`); if (card) container.scrollLeft = card.offsetLeft - 20; }, 100);
         }
@@ -271,9 +250,9 @@
                 detailSection.classList.remove('hidden');
                 dayRaces.forEach(([id, race], idx) => {
                     const pList = Object.entries(allData.participants || {}).filter(([pid, p]) => p.raceId === id).sort((a, b) => a[1].name.localeCompare(b[1].name, 'ko'));
-                    const urlL = race.url ? `<a href="${race.url.startsWith('http') ? race.url : 'https://'+race.url}" target="_blank" class="text-[10px] text-blue-500 font-black underline block mb-1 uppercase text-xs">🔗 대회 홈페이지</a>` : '';
-                    const chatL = race.chatUrl ? `<a href="${race.chatUrl.startsWith('http') ? race.chatUrl : 'https://'+race.chatUrl}" target="_blank" class="text-[10px] text-green-600 font-black underline block mb-2 uppercase text-xs">💬 오픈채팅방 바로가기</a>` : '';
-                    container.innerHTML += `<div id="target-${dateStr}-${idx}" class="bg-white rounded-[1rem] p-6 shadow-sm border border-slate-100 border-t-[4px] border-t-yellow-400 scroll-mt-4 text-left font-bold"><div class="flex justify-between items-start mb-1 font-black font-bold"><h4 class="text-lg text-slate-800 leading-tight uppercase font-bold">${race.name}</h4><div class="flex gap-2"><button onclick="editRace('${id}')" class="text-[9px] text-slate-400 font-black uppercase">Edit</button><button onclick="deleteRace('${id}')" class="text-[9px] text-red-400 font-black uppercase">Del</button><button onclick="openJoinModal('${id}')" class="bg-slate-900 text-white px-4 py-2 rounded-xl text-[10px] font-black shadow-lg ml-2 uppercase">Join</button></div></div>${urlL}${chatL}<p class="text-[10px] text-slate-400 mb-4 uppercase font-black">${race.courses.join(' / ')}</p><div class="bg-slate-50 rounded-[1rem] p-4 border border-slate-100 font-bold"><p class="text-[9px] font-black text-slate-300 mb-3 uppercase tracking-widest font-bold">Team Runners (${pList.length})</p><div class="space-y-3 font-black">${pList.map(([pid, p]) => `<div class="flex justify-between items-center text-sm font-bold"><span class="text-slate-700">${p.name} <small class="text-slate-400 font-bold ml-1 uppercase text-xs">${p.gender}</small></span><div class="flex items-center gap-3"><span class="bg-yellow-200 text-slate-800 px-2 py-0.5 rounded-lg font-black text-[9px] uppercase font-bold">${p.course}</span><button onclick="deleteParticipant('${pid}')" class="text-red-300 font-black text-lg leading-none">×</button></div></div>`).join('')}</div></div></div>`;
+                    const urlL = race.url ? `<a href="${race.url.startsWith('http') ? race.url : 'https://'+race.url}" target="_blank" class="text-[10px] text-blue-500 font-black underline block mb-1 uppercase text-xs font-black">🔗 대회 홈페이지</a>` : '';
+                    const chatL = race.chatUrl ? `<a href="${chatUrl.startsWith('http') ? chatUrl : 'https://'+chatUrl}" target="_blank" class="text-[10px] text-green-600 font-black underline block mb-2 uppercase text-xs font-black">💬 오픈채팅방 바로가기</a>` : '';
+                    container.innerHTML += `<div id="target-${dateStr}-${idx}" class="bg-white rounded-[1rem] p-6 shadow-sm border border-slate-100 border-t-[4px] border-t-yellow-400 scroll-mt-4 text-left font-bold"><div class="flex justify-between items-start mb-1 font-black font-bold"><h4 class="text-lg text-slate-800 leading-tight uppercase font-bold font-black">${race.name}</h4><div class="flex gap-2"><button onclick="editRace('${id}')" class="text-[9px] text-slate-400 font-black uppercase">Edit</button><button onclick="deleteRace('${id}')" class="text-[9px] text-red-400 font-black uppercase">Del</button><button onclick="openJoinModal('${id}')" class="bg-slate-900 text-white px-4 py-2 rounded-xl text-[10px] font-black shadow-lg ml-2 uppercase">Join</button></div></div>${urlL}${chatL}<p class="text-[10px] text-slate-400 mb-4 uppercase font-black font-black">${race.courses.join(' / ')}</p><div class="bg-slate-50 rounded-[1rem] p-4 border border-slate-100 font-bold"><p class="text-[9px] font-black text-slate-300 mb-3 uppercase tracking-widest font-bold text-left font-black">Team Runners (${pList.length})</p><div class="space-y-3 font-black">${pList.map(([pid, p]) => `<div class="flex justify-between items-center text-sm font-bold font-black"><span class="font-black text-slate-700">${p.name} <small class="text-slate-400 font-bold ml-1 uppercase text-xs font-black">${p.gender}</small></span><div class="flex items-center gap-3"><span class="bg-yellow-200 text-slate-800 px-2 py-0.5 rounded-lg font-black text-[9px] uppercase font-bold font-black">${p.course}</span><button onclick="deleteParticipant('${pid}')" class="text-red-300 font-black text-lg leading-none">×</button></div></div>`).join('')}</div></div></div>`;
                 });
                 if (shouldScroll) setTimeout(() => { const target = document.getElementById(`target-${dateStr}-0`); if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 50);
             } else { detailSection.classList.add('hidden'); }
