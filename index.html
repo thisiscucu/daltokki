@@ -4,12 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <title>1987 DALTOKKI</title>
-    
     <link rel="apple-touch-icon" href="logo.png">
     <link rel="shortcut icon" href="logo.png">
     <meta name="theme-color" content="#0f172a"> 
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;800&family=Roboto+Mono:wght@500;700&display=swap');
@@ -63,7 +61,7 @@
 
     <section id="day-detail" class="px-4 mt-4 hidden">
         <h3 id="selected-date-label" class="text-[10px] font-black text-slate-400 mb-2 px-2 uppercase tracking-widest font-bold">Event Date</h3>
-        <div id="race-list-for-day" class="space-y-4"></div>
+        <div id="race-list-for-day" class="space-y-4 text-left"></div>
     </section>
 
     <div id="record-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden z-[60] flex flex-col text-left">
@@ -72,18 +70,20 @@
                 <h2 class="text-2xl font-black italic text-yellow-400">HALL OF FAME</h2>
                 <button onclick="closeRecordRoom()" class="text-slate-400 text-2xl">×</button>
             </div>
-            <div class="flex gap-5 text-[15px] font-black text-slate-400 overflow-x-auto no-scrollbar whitespace-nowrap" id="record-tabs">
-                <button onclick="changeRecordTab('all')" id="tab-all" class="pb-2">All time</button>
-                <button onclick="changeRecordTab('2026')" id="tab-2026" class="pb-2 tab-active">26년</button>
-                <button onclick="changeRecordTab('2025')" id="tab-2025" class="pb-2">25년</button>
-                <button onclick="changeRecordTab('prev')" id="tab-prev" class="pb-2">이전</button>
-                <button onclick="changeRecordTab('sub3')" id="tab-sub3" class="pb-2 text-yellow-500">Sub-3 👑</button>
+            <div class="flex justify-between items-end">
+                <div class="flex gap-5 text-[15px] font-black text-slate-400 overflow-x-auto no-scrollbar whitespace-nowrap pb-2" id="record-tabs">
+                    <button onclick="changeRecordTab('all')" id="tab-all">All time</button>
+                    <button onclick="changeRecordTab('2026')" id="tab-2026" class="tab-active">26년</button>
+                    <button onclick="changeRecordTab('2025')" id="tab-2025">25년</button>
+                    <button onclick="changeRecordTab('prev')" id="tab-prev">이전</button>
+                    <button onclick="changeRecordTab('sub3')" id="tab-sub3" class="text-yellow-500">Sub-3 👑</button>
+                </div>
+                <button onclick="openAddRecordModal()" class="bg-yellow-400 text-slate-900 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase shadow-lg mb-2 shrink-0 ml-4">기록 추가</button>
             </div>
         </div>
         <div class="flex-1 overflow-auto bg-white p-2">
             <div class="flex justify-between items-center mb-4 px-2">
                 <span id="record-count-label" class="text-[10px] text-slate-400 font-bold uppercase tracking-widest text-xs">Record Table</span>
-                <button id="add-record-btn" onclick="openAddRecordModal()" class="bg-slate-900 text-white px-3 py-1.5 rounded-lg text-[10px] font-black hidden">기록 추가하기</button>
             </div>
             <table class="w-full text-left border-collapse border-none">
                 <thead>
@@ -101,10 +101,31 @@
         </div>
     </div>
 
-    <div id="add-record-modal" class="fixed inset-0 bg-black/70 backdrop-blur-md hidden z-[70] flex items-center justify-center p-6 text-left"><div class="bg-white w-full max-w-sm rounded-[1rem] p-8 shadow-2xl"><h2 id="rec-modal-title" class="text-xl font-black mb-6 text-slate-800 uppercase">Update Record</h2><input type="text" id="rec-name" placeholder="이름" class="w-full bg-slate-50 border-none p-4 rounded-lg mb-4 outline-none font-bold shadow-inner"><div class="grid grid-cols-2 gap-3 mb-6"><input type="text" id="rec-5k" placeholder="5K (00:00)" oninput="formatRecord(this, 'short')" class="bg-slate-50 border-none p-3 rounded-lg outline-none text-sm shadow-inner record-font"><input type="text" id="rec-10k" placeholder="10K (00:00)" oninput="formatRecord(this, 'short')" class="bg-slate-50 border-none p-3 rounded-lg outline-none text-sm shadow-inner record-font"><input type="text" id="rec-half" placeholder="Half (0:00:00)" oninput="formatRecord(this, 'long')" class="bg-slate-50 border-none p-3 rounded-lg outline-none text-sm shadow-inner record-font"><input type="text" id="rec-full" placeholder="Full (0:00:00)" oninput="formatRecord(this, 'long')" class="bg-slate-50 border-none p-3 rounded-lg outline-none text-sm shadow-inner record-font"></div><div class="flex gap-3"><button onclick="closeAddRecordModal()" class="flex-1 py-4 font-black text-slate-400 text-sm uppercase">Cancel</button><button onclick="saveUserRecord()" class="flex-1 bg-yellow-400 text-slate-900 py-4 rounded-xl font-black shadow-lg text-sm uppercase">Save</button></div></div></div>
-    <div id="admin-modal" class="fixed inset-0 bg-black/70 backdrop-blur-md hidden z-50 flex items-center justify-center p-6 text-left"><div class="bg-white w-full max-w-md rounded-[1rem] p-8 shadow-2xl max-h-[90vh] overflow-y-auto"><h2 class="text-xl font-black mb-4 text-slate-800 uppercase">Data Manager</h2><textarea id="bulk-json-input" placeholder='JSON data...' class="w-full h-48 bg-slate-50 border-none p-4 rounded-lg mb-4 outline-none text-[10px] font-mono shadow-inner"></textarea><div class="grid grid-cols-2 gap-3 mb-6 font-black"><button onclick="importData()" class="bg-slate-900 text-white py-4 rounded-xl shadow-lg">Import</button><button onclick="exportData()" class="bg-yellow-400 text-slate-900 py-4 rounded-xl shadow-lg">Export</button></div><button onclick="closeAdminModal()" class="w-full py-2 font-black text-slate-400 uppercase text-xs">Close</button></div></div>
-    <div id="race-modal" class="fixed inset-0 bg-black/70 backdrop-blur-md hidden z-50 flex items-center justify-center p-6 text-left"><div class="bg-white w-full max-w-sm rounded-[1rem] p-8 shadow-2xl"><h2 id="race-modal-title" class="text-xl font-black mb-6 text-slate-800 uppercase">New Race</h2><input type="text" id="new-race-name" placeholder="대회 명칭" class="w-full bg-slate-50 border-none p-4 rounded-lg mb-3 outline-none text-base font-bold shadow-inner"><input type="text" id="new-race-url" placeholder="대회 홈페이지 (URL)" class="w-full bg-slate-50 border-none p-4 rounded-lg mb-3 outline-none text-base font-bold shadow-inner"><input type="text" id="new-chat-url" placeholder="오픈채팅방 URL" class="w-full bg-slate-50 border-none p-4 rounded-lg mb-3 outline-none text-base font-bold shadow-inner"><input type="date" id="new-race-date" required class="w-full bg-slate-50 border-none p-4 rounded-lg mb-4 outline-none text-base font-black shadow-inner"><div class="flex flex-wrap gap-2 mb-6" id="course-checks"><label class="bg-slate-50 px-2 py-2 rounded-lg text-[10px] font-black"><input type="checkbox" value="5K"> 5K</label><label class="bg-slate-50 px-2 py-2 rounded-lg text-[10px] font-black"><input type="checkbox" value="10K"> 10K</label><label class="bg-slate-50 px-2 py-2 rounded-lg text-[10px] font-black"><input type="checkbox" value="Half"> Half</label><label class="bg-slate-50 px-2 py-2 rounded-lg text-[10px] font-black"><input type="checkbox" value="Full"> Full</label><label class="bg-slate-50 px-2 py-2 rounded-lg text-[10px] font-black"><input type="checkbox" value="기타"> 기타</label></div><div class="flex gap-3 font-black"><button onclick="closeRaceModal()" class="flex-1 py-4 text-slate-400 text-sm uppercase">Cancel</button><button onclick="saveRace()" class="flex-1 bg-slate-900 text-white rounded-xl shadow-lg text-sm uppercase">Save</button></div></div></div>
-    <div id="join-modal" class="fixed inset-0 bg-black/70 backdrop-blur-md hidden z-50 flex items-center justify-center p-6 text-left"><div class="bg-white w-full max-w-sm rounded-[1rem] p-8 shadow-2xl border-white/20"><h2 id="join-race-title" class="text-xl font-black mb-1 text-slate-800">Runner Info</h2><p id="join-race-date" class="text-xs text-slate-400 mb-6 font-black"></p><input type="text" id="user-name" placeholder="이름" class="w-full bg-slate-50 border-none p-4 rounded-lg mb-4 outline-none text-base font-bold shadow-inner"><div class="flex gap-8 mb-6 font-black text-sm"><label><input type="radio" name="gender" value="남" checked class="accent-slate-900"> 남성</label><label><input type="radio" name="gender" value="여" class="accent-slate-900"> 여성</label></div><select id="user-course" class="w-full bg-slate-50 border-none p-4 rounded-lg mb-8 outline-none text-slate-500 font-black shadow-inner"></select><div class="flex gap-3 font-black"><button onclick="closeJoinModal()" class="flex-1 py-4 font-black text-slate-400 text-sm uppercase">Cancel</button><button onclick="addParticipant()" class="flex-1 bg-yellow-400 text-slate-900 rounded-xl shadow-lg text-sm uppercase">Register</button></div></div></div>
+    <div id="add-record-modal" class="fixed inset-0 bg-black/70 backdrop-blur-md hidden z-[70] flex items-center justify-center p-6 text-left font-bold">
+        <div class="bg-white w-full max-w-sm rounded-[1rem] p-8 shadow-2xl">
+            <h2 id="rec-modal-title" class="text-xl font-black mb-6 text-slate-800 uppercase">Update Record</h2>
+            <select id="rec-year" class="w-full bg-slate-50 border-none p-4 rounded-lg mb-4 outline-none font-bold shadow-inner appearance-none">
+                <option value="2026">2026년</option>
+                <option value="2025">2025년</option>
+                <option value="prev">이전</option>
+            </select>
+            <input type="text" id="rec-name" placeholder="이름을 입력하세요" class="w-full bg-slate-50 border-none p-4 rounded-lg mb-4 outline-none font-bold shadow-inner">
+            <div class="grid grid-cols-2 gap-3 mb-6">
+                <input type="text" id="rec-5k" placeholder="5K (00:00)" oninput="formatRecord(this, 'short')" class="bg-slate-50 border-none p-3 rounded-lg outline-none text-sm shadow-inner record-font font-bold">
+                <input type="text" id="rec-10k" placeholder="10K (00:00)" oninput="formatRecord(this, 'short')" class="bg-slate-50 border-none p-3 rounded-lg outline-none text-sm shadow-inner record-font font-bold">
+                <input type="text" id="rec-half" placeholder="Half (0:00:00)" oninput="formatRecord(this, 'long')" class="bg-slate-50 border-none p-3 rounded-lg outline-none text-sm shadow-inner record-font font-bold">
+                <input type="text" id="rec-full" placeholder="Full (0:00:00)" oninput="formatRecord(this, 'long')" class="bg-slate-50 border-none p-3 rounded-lg outline-none text-sm shadow-inner record-font font-bold">
+            </div>
+            <div class="flex gap-3">
+                <button onclick="closeAddRecordModal()" class="flex-1 py-4 font-black text-slate-400 text-sm uppercase">Cancel</button>
+                <button onclick="saveUserRecord()" class="flex-1 bg-yellow-400 text-slate-900 py-4 rounded-xl font-black shadow-lg text-sm uppercase">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="admin-modal" class="fixed inset-0 bg-black/70 backdrop-blur-md hidden z-50 flex items-center justify-center p-6 text-left font-bold"><div class="bg-white w-full max-w-md rounded-[1rem] p-8 shadow-2xl max-h-[90vh] overflow-y-auto"><h2 class="text-xl font-black mb-4 text-slate-800 uppercase">Data Manager</h2><textarea id="bulk-json-input" placeholder='JSON data...' class="w-full h-48 bg-slate-50 border-none p-4 rounded-lg mb-4 outline-none text-[10px] font-mono shadow-inner"></textarea><div class="grid grid-cols-2 gap-3 mb-6 font-black"><button onclick="importData()" class="bg-slate-900 text-white py-4 rounded-xl shadow-lg">Import</button><button onclick="exportData()" class="bg-yellow-400 text-slate-900 py-4 rounded-xl shadow-lg">Export</button></div><button onclick="closeAdminModal()" class="w-full py-2 font-black text-slate-400 uppercase text-xs">Close</button></div></div>
+    <div id="race-modal" class="fixed inset-0 bg-black/70 backdrop-blur-md hidden z-50 flex items-center justify-center p-6 text-left font-bold"><div class="bg-white w-full max-w-sm rounded-[1rem] p-8 shadow-2xl font-bold"><h2 id="race-modal-title" class="text-xl font-black mb-6 text-slate-800 uppercase">New Race</h2><input type="text" id="new-race-name" placeholder="대회 명칭" class="w-full bg-slate-50 border-none p-4 rounded-lg mb-3 outline-none text-base font-bold shadow-inner"><input type="text" id="new-race-url" placeholder="대회 홈페이지 (URL)" class="w-full bg-slate-50 border-none p-4 rounded-lg mb-3 outline-none text-base font-bold shadow-inner"><input type="text" id="new-chat-url" placeholder="오픈채팅방 URL" class="w-full bg-slate-50 border-none p-4 rounded-lg mb-3 outline-none text-base font-bold shadow-inner"><input type="date" id="new-race-date" required class="w-full bg-slate-50 border-none p-4 rounded-lg mb-4 outline-none text-base font-black shadow-inner"><div class="flex flex-wrap gap-2 mb-6" id="course-checks"><label class="bg-slate-50 px-2 py-2 rounded-lg text-[10px] font-black"><input type="checkbox" value="5K"> 5K</label><label class="bg-slate-50 px-2 py-2 rounded-lg text-[10px] font-black"><input type="checkbox" value="10K"> 10K</label><label class="bg-slate-50 px-2 py-2 rounded-lg text-[10px] font-black"><input type="checkbox" value="Half"> Half</label><label class="bg-slate-50 px-2 py-2 rounded-lg text-[10px] font-black"><input type="checkbox" value="Full"> Full</label><label class="bg-slate-50 px-2 py-2 rounded-lg text-[10px] font-black"><input type="checkbox" value="기타"> 기타</label></div><div class="flex gap-3 font-black"><button onclick="closeRaceModal()" class="flex-1 py-4 text-slate-400 text-sm uppercase">Cancel</button><button onclick="saveRace()" class="flex-1 bg-slate-900 text-white rounded-xl shadow-lg text-sm uppercase">Save</button></div></div></div>
+    <div id="join-modal" class="fixed inset-0 bg-black/70 backdrop-blur-md hidden z-50 flex items-center justify-center p-6 text-left font-bold"><div class="bg-white w-full max-w-sm rounded-[1rem] p-8 shadow-2xl border-white/20"><h2 id="join-race-title" class="text-xl font-black mb-1 text-slate-800">Runner Info</h2><p id="join-race-date" class="text-xs text-slate-400 mb-6 font-black"></p><input type="text" id="user-name" placeholder="이름" class="w-full bg-slate-50 border-none p-4 rounded-lg mb-4 outline-none text-base font-bold shadow-inner"><div class="flex gap-8 mb-6 font-black text-sm"><label><input type="radio" name="gender" value="남" checked class="accent-slate-900"> 남성</label><label><input type="radio" name="gender" value="여" class="accent-slate-900"> 여성</label></div><select id="user-course" class="w-full bg-slate-50 border-none p-4 rounded-lg mb-8 outline-none text-slate-500 font-black shadow-inner"></select><div class="flex gap-3 font-black"><button onclick="closeJoinModal()" class="flex-1 py-4 font-black text-slate-400 text-sm uppercase">Cancel</button><button onclick="addParticipant()" class="flex-1 bg-yellow-400 text-slate-900 rounded-xl shadow-lg text-sm uppercase">Register</button></div></div></div>
 
     <script>
         const DB_URL = "https://runcal-80d30-default-rtdb.firebaseio.com"; 
@@ -121,12 +142,12 @@
 
         window.onload = () => { initMonthSelect(); fetchData(); };
 
-        // 💡 날짜 문자열을 yyyy-mm-dd (0 채움) 형식으로 강제 변환하는 도우미 함수
+        // 💡 모든 날짜 비교의 핵심 (DB에 3-15라고 있어도 03-15로 변환)
         function normalizeDate(dateStr) {
             if (!dateStr) return "";
             const parts = dateStr.split('-');
             if (parts.length !== 3) return dateStr;
-            return `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
+            return `${parts[0]}-${String(parts[1]).padStart(2, '0')}-${String(parts[2]).padStart(2, '0')}`;
         }
 
         async function fetchData(keepView = false) {
@@ -136,58 +157,63 @@
                 allData = data || { races: {}, participants: {}, records: { "2026": {}, "2025": {}, "prev": {} } };
                 if (!allData.records) allData.records = { "2026": {}, "2025": {}, "prev": {} };
                 if (!allData.races) allData.races = {};
-
                 renderAll();
-                
-                if(selectedDate) {
-                    setTimeout(() => showDayDetail(selectedDate, false), 100);
-                }
-                
+                if(selectedDate) { showDayDetail(selectedDate, false); }
                 if(!document.getElementById('record-modal').classList.contains('hidden')) renderRecords();
             } catch(e) { console.error("Fetch error", e); }
         }
 
-        // --- 🏆 기록실 로직 ---
         function openRecordRoom() { changeRecordTab('2026'); document.getElementById('record-modal').classList.remove('hidden'); }
         function closeRecordRoom() { document.getElementById('record-modal').classList.add('hidden'); }
+        
         function changeRecordTab(tab) { 
             currentRecordTab = tab;
             document.querySelectorAll('#record-tabs button').forEach(b => b.classList.remove('tab-active'));
-            document.getElementById('tab-' + tab).classList.add('tab-active');
-            document.getElementById('add-record-btn').style.display = (['all', 'sub3'].includes(tab)) ? 'none' : 'block';
+            const targetBtn = document.getElementById('tab-' + tab);
+            if(targetBtn) targetBtn.classList.add('tab-active');
             document.getElementById('th-action').style.display = (['all', 'sub3'].includes(tab)) ? 'none' : 'table-cell';
             renderRecords();
         }
+
         function timeToSeconds(timeStr) { if (!timeStr || timeStr === '-' || timeStr.trim() === '') return 999999999; const parts = timeStr.split(':').map(Number); if (parts.length === 2) return parts[0] * 60 + parts[1]; if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2]; return 999999999; }
-        function renderRecords() { const body = document.getElementById('record-body'); body.innerHTML = ''; let dataToShow = []; const getAllTimeData = () => { const names = new Set([...Object.keys(allData.records["2026"] || {}), ...Object.keys(allData.records["2025"] || {}), ...Object.keys(allData.records["prev"] || {})]); return Array.from(names).map(name => { const best = { name, "5k": "-", "10k": "-", "half": "-", "full": "-" }; ["2026", "2025", "prev"].forEach(yr => { const rec = allData.records[yr] ? allData.records[yr][name] : null; if (rec) ["5k", "10k", "half", "full"].forEach(k => { if (rec[k] && rec[k] !== "-" && (best[k] === "-" || timeToSeconds(rec[k]) < timeToSeconds(best[k]))) best[k] = rec[k]; }); }); return best; }); }; if (currentRecordTab === 'all') { dataToShow = getAllTimeData(); document.getElementById('record-count-label').innerText = `Total Runners: ${dataToShow.length}`; } else if (currentRecordTab === 'sub3') { dataToShow = getAllTimeData().filter(r => timeToSeconds(r.full) <= 10799); document.getElementById('record-count-label').innerText = `Sub-3 Runners: ${dataToShow.length} 👑`; } else { Object.entries(allData.records[currentRecordTab] || {}).forEach(([name, rec]) => dataToShow.push({ name, ...rec })); document.getElementById('record-count-label').innerText = `${currentRecordTab === 'prev' ? '이전' : currentRecordTab + '년'} Records`; } dataToShow.sort((a, b) => { let valA = a[sortKey] || "-"; let valB = b[sortKey] || "-"; if (sortKey === 'name') return valA.localeCompare(valB, 'ko') * sortDir; return (timeToSeconds(valA) - timeToSeconds(valB)) * sortDir; }); dataToShow.forEach(r => { const actionBtns = (['all', 'sub3'].includes(currentRecordTab)) ? '' : `<td class="py-4 text-center min-px"><div class="flex gap-1.5 justify-center"><button onclick="editUserRecord('${r.name}')" class="text-blue-500 text-[11px] font-black uppercase">EDIT</button><button onclick="deleteUserRecord('${r.name}')" class="text-red-400 text-[11px] font-black uppercase">DEL</button></div></td>`; body.innerHTML += `<tr class="border-b border-slate-50"><td class="py-4 text-slate-900 min-px truncate">${r.name}</td><td class="py-4 text-slate-500 record-font text-[12px] min-px">${r["5k"]}</td><td class="py-4 text-slate-500 record-font text-[12px] min-px">${r["10k"]}</td><td class="py-4 text-slate-500 record-font text-[12px] min-px">${r["half"]}</td><td class="py-4 text-slate-900 record-font text-[13px] font-black min-px">${r["full"]}</td>${actionBtns}</tr>`; }); }
+        
+        function renderRecords() { 
+            const body = document.getElementById('record-body'); body.innerHTML = ''; let dataToShow = []; 
+            const getAllTimeData = () => { const names = new Set([...Object.keys(allData.records["2026"] || {}), ...Object.keys(allData.records["2025"] || {}), ...Object.keys(allData.records["prev"] || {})]); return Array.from(names).map(name => { const best = { name, "5k": "-", "10k": "-", "half": "-", "full": "-" }; ["2026", "2025", "prev"].forEach(yr => { const rec = allData.records[yr] ? allData.records[yr][name] : null; if (rec) ["5k", "10k", "half", "full"].forEach(k => { if (rec[k] && rec[k] !== "-" && (best[k] === "-" || timeToSeconds(rec[k]) < timeToSeconds(best[k]))) best[k] = rec[k]; }); }); return best; }); }; 
+            if (currentRecordTab === 'all') { dataToShow = getAllTimeData(); document.getElementById('record-count-label').innerText = `Total Runners: ${dataToShow.length}`; } 
+            else if (currentRecordTab === 'sub3') { dataToShow = getAllTimeData().filter(r => timeToSeconds(r.full) <= 10799); document.getElementById('record-count-label').innerText = `Sub-3 Runners: ${dataToShow.length} 👑`; } 
+            else { Object.entries(allData.records[currentRecordTab] || {}).forEach(([name, rec]) => dataToShow.push({ name, ...rec })); document.getElementById('record-count-label').innerText = `${currentRecordTab === 'prev' ? '이전' : currentRecordTab + '년'} Records`; } 
+            dataToShow.sort((a, b) => { let valA = a[sortKey] || "-"; let valB = b[sortKey] || "-"; if (sortKey === 'name') return valA.localeCompare(valB, 'ko') * sortDir; return (timeToSeconds(valA) - timeToSeconds(valB)) * sortDir; }); 
+            dataToShow.forEach(r => { const actionBtns = (['all', 'sub3'].includes(currentRecordTab)) ? '' : `<td class="py-4 text-center min-px"><div class="flex gap-1.5 justify-center"><button onclick="editUserRecord('${r.name}')" class="text-blue-500 text-[11px] font-black uppercase font-black">EDIT</button><button onclick="deleteUserRecord('${r.name}')" class="text-red-400 text-[11px] font-black uppercase font-black">DEL</button></div></td>`; body.innerHTML += `<tr class="border-b border-slate-50"><td class="py-4 text-slate-900 min-px truncate">${r.name}</td><td class="py-4 text-slate-500 record-font text-[12px] min-px">${r["5k"]}</td><td class="py-4 text-slate-500 record-font text-[12px] min-px">${r["10k"]}</td><td class="py-4 text-slate-500 record-font text-[12px] min-px">${r["half"]}</td><td class="py-4 text-slate-900 record-font text-[13px] font-black min-px">${r["full"]}</td>${actionBtns}</tr>`; }); 
+        }
+
         function formatRecord(input, type) { let val = input.value.replace(/[^0-9]/g, ""); let formatted = ""; if (type === 'short') { if (val.length > 2) formatted = val.slice(0, 2) + ":" + val.slice(2, 4); else formatted = val; } else { if (val.length > 5) formatted = val.slice(0, 1) + ":" + val.slice(1, 3) + ":" + val.slice(3, 5); else if (val.length > 3) formatted = val.slice(0, 1) + ":" + val.slice(1, 3) + ":" + val.slice(3); else if (val.length > 1) formatted = val.slice(0, 1) + ":" + val.slice(1); else formatted = val; } input.value = formatted; }
         function sortRecords(key) { sortDir = (sortKey === key) ? sortDir * -1 : 1; sortKey = key; renderRecords(); }
-        function openAddRecordModal() { ['rec-name','rec-5k','rec-10k','rec-half','rec-full'].forEach(id => { document.getElementById(id).value = ""; if(id==='rec-name') document.getElementById(id).disabled=false; }); document.getElementById('rec-modal-title').innerText = "Update Record"; document.getElementById('add-record-modal').classList.remove('hidden'); }
-        function closeAddRecordModal() { document.getElementById('add-record-modal').classList.add('hidden'); }
-        function editUserRecord(name) { const rec = allData.records[currentRecordTab][name]; document.getElementById('rec-modal-title').innerText = "Edit Record"; document.getElementById('rec-name').value = name; document.getElementById('rec-name').disabled = true; ['5k','10k','half','full'].forEach(k => document.getElementById(`rec-${k}`).value = rec[k] === "-" ? "" : rec[k]); document.getElementById('add-record-modal').classList.remove('hidden'); }
-        async function deleteUserRecord(name) { if(confirm("삭제?")) { if(prompt("삭제 비밀번호") !== MASTER_PW) return; await fetch(`${DB_URL}/records/${currentRecordTab}/${name}.json`, { method: 'DELETE' }); fetchData(); } }
-        async function saveUserRecord() { const name = document.getElementById('rec-name').value.trim(); if (!name) return alert("이름!"); if (!document.getElementById('rec-name').disabled && allData.records[currentRecordTab] && allData.records[currentRecordTab][name]) return alert("중복!"); const newRec = { "5k": document.getElementById('rec-5k').value || "-", "10k": document.getElementById('rec-10k').value || "-", "half": document.getElementById('rec-half').value || "-", "full": document.getElementById('rec-full').value || "-" }; await fetch(`${DB_URL}/records/${currentRecordTab}/${name}.json`, { method: 'PUT', body: JSON.stringify(newRec) }); closeAddRecordModal(); fetchData(); }
 
-        // --- 📅 달력 로직 (정규화 적용) ---
+        function openAddRecordModal() { document.getElementById('rec-modal-title').innerText = "Update Record"; document.getElementById('rec-year').disabled = false; document.getElementById('rec-year').value = (['all', 'sub3'].includes(currentRecordTab)) ? "2026" : currentRecordTab; document.getElementById('rec-name').value = ""; document.getElementById('rec-name').disabled = false; ['5k','10k','half','full'].forEach(id => document.getElementById(`rec-${id}`).value = ""); document.getElementById('add-record-modal').classList.remove('hidden'); }
+        function closeAddRecordModal() { document.getElementById('add-record-modal').classList.add('hidden'); }
+        function editUserRecord(name) { const rec = allData.records[currentRecordTab][name]; document.getElementById('rec-modal-title').innerText = "Edit Record"; document.getElementById('rec-year').value = currentRecordTab; document.getElementById('rec-year').disabled = true; document.getElementById('rec-name').value = name; document.getElementById('rec-name').disabled = true; ['5k','10k','half','full'].forEach(k => document.getElementById(`rec-${k}`).value = rec[k] === "-" ? "" : rec[k]); document.getElementById('add-record-modal').classList.remove('hidden'); }
+        async function deleteUserRecord(name) { if(confirm("삭제?")) { if(prompt("삭제 비밀번호") !== MASTER_PW) return; await fetch(`${DB_URL}/records/${currentRecordTab}/${name}.json`, { method: 'DELETE' }); fetchData(); } }
+        async function saveUserRecord() { const year = document.getElementById('rec-year').value; const name = document.getElementById('rec-name').value.trim(); if (!name) return alert("이름!"); if (!document.getElementById('rec-name').disabled && allData.records[year] && allData.records[year][name]) return alert("중복!"); const newRec = { "5k": document.getElementById('rec-5k').value || "-", "10k": document.getElementById('rec-10k').value || "-", "half": document.getElementById('rec-half').value || "-", "full": document.getElementById('rec-full').value || "-" }; await fetch(`${DB_URL}/records/${year}/${name}.json`, { method: 'PUT', body: JSON.stringify(newRec) }); closeAddRecordModal(); fetchData(); }
+
         function moveMonth(offset) { currentMonth += offset; if (currentMonth > 12) { currentMonth = 1; currentYear++; } else if (currentMonth < 1) { currentMonth = 12; currentYear--; } document.getElementById('month-select').value = currentMonth; changeMonth(); }
         function changeMonth() { currentMonth = parseInt(document.getElementById('month-select').value); selectedDate = null; renderAll(); }
         function initMonthSelect() { const select = document.getElementById('month-select'); select.innerHTML = ''; for(let i=1; i<=12; i++) { const opt = document.createElement('option'); opt.value = i; opt.innerText = i + '월'; if(i === currentMonth) opt.selected = true; select.appendChild(opt); } }
         function renderAll() { renderCalendar(); renderMajorCards(); }
-        
+
         function renderCalendar() {
             const container = document.getElementById('calendar-days'); container.innerHTML = '';
             const firstDay = new Date(currentYear, currentMonth - 1, 1).getDay(); const lastDate = new Date(currentYear, currentMonth, 0).getDate();
             for(let i=0; i<firstDay; i++) container.innerHTML += `<div></div>`;
             for(let i=1; i<=lastDate; i++) {
-                // 💡 달력 클릭 날짜 정규화
                 const dateStr = normalizeDate(`${currentYear}-${currentMonth}-${i}`);
                 const hasRace = Object.values(allData.races || {}).some(r => normalizeDate(r.date) === dateStr);
                 const isToday = (i === new Date().getDate() && currentMonth === new Date().getMonth()+1 && currentYear === new Date().getFullYear());
                 const isSelected = (dateStr === selectedDate);
-                container.innerHTML += `<div onclick="showDayDetail('${dateStr}', false)" class="h-10 flex flex-col items-center justify-center cursor-pointer font-bold"><span class="${isToday ? 'bg-yellow-400 text-slate-900 rounded-lg w-8 h-8 flex items-center justify-center font-black shadow-sm text-sm' : (isSelected ? 'border-2 border-yellow-400 rounded-lg w-8 h-8 flex items-center justify-center text-sm' : 'text-sm')}">${i}</span>${hasRace ? '<span class="dot"></span>' : ''}</div>`;
+                container.innerHTML += `<div onclick="showDayDetail('${dateStr}', false)" class="h-10 flex flex-col items-center justify-center cursor-pointer font-bold font-black"><span class="${isToday ? 'bg-yellow-400 text-slate-900 rounded-lg w-8 h-8 flex items-center justify-center font-black shadow-sm text-sm' : (isSelected ? 'border-2 border-yellow-400 rounded-lg w-8 h-8 flex items-center justify-center text-sm' : 'text-sm')}">${i}</span>${hasRace ? '<span class="dot"></span>' : ''}</div>`;
             }
         }
-        
+
         function renderMajorCards() {
             const container = document.getElementById('major-races'); container.innerHTML = ''; const todayStr = normalizeDate(new Date().toISOString().split('T')[0]);
             const sortedRaces = Object.entries(allData.races || {}).sort((a, b) => normalizeDate(a[1].date).localeCompare(normalizeDate(b[1].date)));
@@ -195,19 +221,21 @@
             sortedRaces.forEach(([id, race], index) => {
                 const normDate = normalizeDate(race.date);
                 if (firstFutureIndex === -1 && normDate >= todayStr) firstFutureIndex = index;
-                container.innerHTML += `<div id="card-${index}" onclick="showDayDetail('${normDate}', true)" class="min-w-[140px] bg-white p-4 rounded-[1rem] shadow-sm border border-slate-100 flex-shrink-0 font-black uppercase ${normDate < todayStr ? 'opacity-40' : ''}"><p class="text-[9px] text-yellow-500 mb-1 font-bold font-black text-left">RACE</p><h4 class="text-slate-800 truncate text-[11px] font-bold text-left font-black">${race.name}</h4><p class="text-[9px] text-slate-400 mt-1 font-black font-bold text-xs text-left">${normDate}</p></div>`;
+                container.innerHTML += `<div id="card-${index}" onclick="showDayDetail('${normDate}', true)" class="min-w-[140px] bg-white p-4 rounded-[1rem] shadow-sm border border-slate-100 flex-shrink-0 font-black uppercase font-black ${normDate < todayStr ? 'opacity-40' : ''}"><p class="text-[9px] text-yellow-500 mb-1 font-bold font-black text-left">RACE</p><h4 class="text-slate-800 truncate text-[11px] font-bold text-left font-black">${race.name}</h4><p class="text-[9px] text-slate-400 mt-1 font-black font-bold text-xs text-left">${normDate}</p></div>`;
             });
             if (firstFutureIndex !== -1) setTimeout(() => { const card = document.getElementById(`card-${firstFutureIndex}`); if (card) container.scrollLeft = card.offsetLeft - 20; }, 100);
         }
 
         function showDayDetail(dateStr, shouldScroll) {
-            selectedDate = normalizeDate(dateStr);
-            const container = document.getElementById('race-list-for-day'); const detailSection = document.getElementById('day-detail'); 
-            document.getElementById('selected-date-label').innerText = selectedDate; 
+            const normalizedTarget = normalizeDate(dateStr); // 💡 여기서 한 번 정규화
+            selectedDate = normalizedTarget; 
+            const container = document.getElementById('race-list-for-day'); 
+            const detailSection = document.getElementById('day-detail'); 
+            document.getElementById('selected-date-label').innerText = normalizedTarget; 
             container.innerHTML = ''; 
             
-            // 💡 필터링 시 DB 데이터와 클릭 날짜 모두 정규화하여 비교 (핵심 해결책)
-            const dayRaces = Object.entries(allData.races || {}).filter(([id, r]) => normalizeDate(r.date) === selectedDate);
+            // 💡 필터링 시 DB 데이터(r.date)도 무조건 정규화해서 비교 (중요!)
+            const dayRaces = Object.entries(allData.races || {}).filter(([id, r]) => normalizeDate(r.date) === normalizedTarget);
             
             if(dayRaces.length > 0) {
                 detailSection.classList.remove('hidden');
@@ -215,13 +243,12 @@
                     const pList = Object.entries(allData.participants || {}).filter(([pid, p]) => p.raceId === id).sort((a, b) => a[1].name.localeCompare(b[1].name, 'ko'));
                     const urlL = race.url ? `<a href="${race.url.startsWith('http') ? race.url : 'https://'+race.url}" target="_blank" class="text-[10px] text-blue-500 font-black underline block mb-1 uppercase text-xs font-black">🔗 대회 홈페이지</a>` : '';
                     const chatL = race.chatUrl ? `<a href="${race.chatUrl.startsWith('http') ? race.chatUrl : 'https://'+race.chatUrl}" target="_blank" class="text-[10px] text-green-600 font-black underline block mb-2 uppercase text-xs font-black">💬 오픈채팅방 바로가기</a>` : '';
-                    container.innerHTML += `<div id="target-${selectedDate}-${idx}" class="bg-white rounded-[1rem] p-6 shadow-sm border border-slate-100 border-t-[4px] border-t-yellow-400 scroll-mt-4 text-left font-bold font-black"><div class="flex justify-between items-start mb-1 font-black font-bold"><h4 class="text-lg text-slate-800 leading-tight uppercase font-bold font-black text-left">${race.name}</h4><div class="flex gap-2"><button onclick="editRace('${id}')" class="text-[9px] text-slate-400 font-black uppercase">Edit</button><button onclick="deleteRace('${id}')" class="text-[9px] text-red-400 font-black uppercase">Del</button><button onclick="openJoinModal('${id}')" class="bg-slate-900 text-white px-4 py-2 rounded-xl text-[10px] font-black shadow-lg ml-2 uppercase">Join</button></div></div>${urlL}${chatL}<p class="text-[10px] text-slate-400 mb-4 uppercase font-black text-left">${race.courses.join(' / ')}</p><div class="bg-slate-50 rounded-[1rem] p-4 border border-slate-100 font-bold"><p class="text-[9px] font-black text-slate-300 mb-3 uppercase tracking-widest font-bold text-left font-black">Team Runners (${pList.length})</p><div class="space-y-3 font-black">${pList.map(([pid, p]) => `<div class="flex justify-between items-center text-sm font-bold font-black"><span class="font-black text-slate-700">${p.name} <small class="text-slate-400 font-bold ml-1 uppercase text-xs font-black">${p.gender}</small></span><div class="flex items-center gap-3"><span class="bg-yellow-200 text-slate-800 px-2 py-0.5 rounded-lg font-black text-[9px] uppercase font-bold font-black">${p.course}</span><button onclick="deleteParticipant('${pid}')" class="text-red-300 font-black text-lg leading-none">×</button></div></div>`).join('')}</div></div></div>`;
+                    container.innerHTML += `<div id="target-${normalizedTarget}-${idx}" class="bg-white rounded-[1rem] p-6 shadow-sm border border-slate-100 border-t-[4px] border-t-yellow-400 scroll-mt-4 text-left font-bold font-black"><div class="flex justify-between items-start mb-1 font-black font-bold font-black text-left font-black"><h4 class="text-lg text-slate-800 leading-tight uppercase font-bold font-black text-left font-black">${race.name}</h4><div class="flex gap-2 font-black"><button onclick="editRace('${id}')" class="text-[9px] text-slate-400 font-black uppercase font-black">Edit</button><button onclick="deleteRace('${id}')" class="text-[9px] text-red-400 font-black uppercase font-black">Del</button><button onclick="openJoinModal('${id}')" class="bg-slate-900 text-white px-4 py-2 rounded-xl text-[10px] font-black shadow-lg ml-2 uppercase font-black">Join</button></div></div>${urlL}${chatL}<p class="text-[10px] text-slate-400 mb-4 uppercase font-black font-black text-left font-black">${race.courses.join(' / ')}</p><div class="bg-slate-50 rounded-[1rem] p-4 border border-slate-100 font-bold font-black"><p class="text-[9px] font-black text-slate-300 mb-3 uppercase tracking-widest font-bold text-left font-black">Team Runners (${pList.length})</p><div class="space-y-3 font-black">${pList.map(([pid, p]) => `<div class="flex justify-between items-center text-sm font-bold font-black"><span class="font-black text-slate-700">${p.name} <small class="text-slate-400 font-bold ml-1 uppercase text-xs font-black">${p.gender}</small></span><div class="flex items-center gap-3"><span class="bg-yellow-200 text-slate-800 px-2 py-0.5 rounded-lg font-black text-[9px] uppercase font-bold font-black">${p.course}</span><button onclick="deleteParticipant('${pid}')" class="text-red-300 font-black text-lg leading-none">×</button></div></div>`).join('')}</div></div></div>`;
                 });
-                if (shouldScroll) setTimeout(() => { const target = document.getElementById(`target-${selectedDate}-0`); if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 50);
+                if (shouldScroll) setTimeout(() => { const target = document.getElementById(`target-${normalizedTarget}-0`); if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 50);
             } else { detailSection.classList.add('hidden'); }
         }
 
-        // --- 기타 보조 로직 보존 ---
         function checkAdminPassword() { const pw = prompt("Admin 비밀번호"); if (pw === ADMIN_PW) openAdminModal(); else if(pw) alert("틀림"); }
         function openAdminModal() { document.getElementById('admin-modal').classList.remove('hidden'); }
         function closeAdminModal() { document.getElementById('admin-modal').classList.add('hidden'); }
@@ -236,7 +263,7 @@
         async function addParticipant() { const n = document.getElementById('user-name').value; const c = document.getElementById('user-course').value; if(!n || !c) return; await fetch(`${DB_URL}/participants.json`, { method: 'POST', body: JSON.stringify({ raceId: activeRaceId, name: n, gender: document.querySelector('input[name="gender"]:checked').value, course: c }) }); closeJoinModal(); fetchData(true); }
         async function deleteParticipant(pid) { if(prompt("삭제 암호") !== MASTER_PW) return; await fetch(`${DB_URL}/participants/${pid}.json`, { method: 'DELETE' }); fetchData(true); }
         async function importData() { const raw = document.getElementById('bulk-json-input').value; if(!raw) return; try { const d = JSON.parse(raw); if(confirm("업로드?")) { await fetch(`${DB_URL}/.json`, { method: 'PUT', body: JSON.stringify(d) }); location.reload(); } } catch(e) { alert("오류"); } }
-        function exportData() { let csv = "\ufeff구분,이름,날짜/코스,URL\n"; Object.values(allData.races || {}).forEach(r => csv += `대회,${r.name},${r.date},${r.url}\n`); const b = new Blob([csv], { type: 'text/csv' }); const l = document.createElement("a"); l.href = URL.createObjectURL(blob); l.download = "daltokki.csv"; l.click(); }
+        function exportData() { let csv = "\ufeff구분,이름,날짜/코스,URL\n"; Object.values(allData.races || {}).forEach(r => csv += `대회,${r.name},${r.date},${r.url}\n`); const b = new Blob([csv], { type: 'text/csv' }); const l = document.createElement("a"); l.href = URL.createObjectURL(b); l.download = "daltokki.csv"; l.click(); }
     </script>
 </body>
 </html>
