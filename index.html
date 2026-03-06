@@ -83,6 +83,9 @@
             </div>
         </div>
         <div class="flex-1 overflow-auto bg-white p-2">
+            <div class="px-2 mb-2">
+                <span id="record-count-label" class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Total Runners: 0</span>
+            </div>
             <table class="w-full text-left border-collapse border-none">
                 <thead>
                     <tr class="text-[10px] text-slate-400 border-b border-slate-100 font-black">
@@ -119,7 +122,6 @@
 
         window.onload = () => { initMonthSelect(); fetchData(); };
 
-        // 💡 [영구 고정] 날짜를 숫자로만 비교하는 로직
         function isSameDate(dateA, dateB) {
             if (!dateA || !dateB) return false;
             const norm = (d) => d.split('-').map(v => parseInt(v)).join('-');
@@ -145,10 +147,14 @@
         function renderRecords() { 
             const body = document.getElementById('record-body'); body.innerHTML = ''; let dataToShow = []; 
             const getAllTimeData = () => { const names = new Set([...Object.keys(allData.records["2026"] || {}), ...Object.keys(allData.records["2025"] || {}), ...Object.keys(allData.records["prev"] || {})]); return Array.from(names).map(name => { const best = { name, "5k": "-", "10k": "-", "half": "-", "full": "-" }; ["2026", "2025", "prev"].forEach(yr => { const rec = allData.records[yr] ? allData.records[yr][name] : null; if (rec) ["5k", "10k", "half", "full"].forEach(k => { if (rec[k] && rec[k] !== "-" && (best[k] === "-" || timeToSeconds(rec[k]) < timeToSeconds(best[k]))) best[k] = rec[k]; }); }); return best; }); }; 
+            
             if (currentRecordTab === 'all') dataToShow = getAllTimeData();
             else if (currentRecordTab === 'sub3') dataToShow = getAllTimeData().filter(r => timeToSeconds(r.full) <= 10799);
             else Object.entries(allData.records[currentRecordTab] || {}).forEach(([name, rec]) => dataToShow.push({ name, ...rec }));
             
+            // 💡 카운팅 라벨 업데이트
+            document.getElementById('record-count-label').innerText = `Total Runners: ${dataToShow.length}${currentRecordTab === 'sub3' ? ' 👑' : ''}`;
+
             dataToShow.sort((a, b) => { let valA = a[sortKey] || "-"; let valB = b[sortKey] || "-"; if (sortKey === 'name') return valA.localeCompare(valB, 'ko') * sortDir; return (timeToSeconds(valA) - timeToSeconds(valB)) * sortDir; }); 
             dataToShow.forEach((r, idx) => {
                 const actionBtns = (['all', 'sub3'].includes(currentRecordTab)) ? '' : `<td class="py-4 text-center min-px"><div class="flex gap-1.5 justify-center"><button onclick="editUserRecord('${r.name}')" class="text-blue-500 text-[11px] font-black uppercase">EDIT</button><button onclick="deleteUserRecord('${r.name}')" class="text-red-400 text-[11px] font-black uppercase">DEL</button></div></td>`;
@@ -243,7 +249,7 @@
         async function addParticipant() { const n = document.getElementById('user-name').value; const c = document.getElementById('user-course').value; if(!n || !c) return; await fetch(`${DB_URL}/participants.json`, { method: 'POST', body: JSON.stringify({ raceId: activeRaceId, name: n, gender: document.querySelector('input[name="gender"]:checked').value, course: c }) }); closeJoinModal(); fetchData(); }
         async function deleteParticipant(pid) { if(prompt("삭제 암호") !== MASTER_PW) return; await fetch(`${DB_URL}/participants/${pid}.json`, { method: 'DELETE' }); fetchData(); }
         async function importData() { const raw = document.getElementById('bulk-json-input').value; if(!raw) return; try { const d = JSON.parse(raw); if(confirm("업로드?")) { await fetch(`${DB_URL}/.json`, { method: 'PUT', body: JSON.stringify(d) }); location.reload(); } } catch(e) { alert("오류"); } }
-        function exportData() { let csv = "\ufeff구분,이름,날짜/코스,URL\n"; Object.values(allData.races || {}).forEach(r => csv += `대회,${r.name},${r.date},${r.url}\n`); const b = new Blob([csv], { type: 'text/csv' }); const l = document.createElement("a"); l.href = URL.createObjectURL(b); l.download = "daltokki.csv"; l.click(); }
+        function exportData() { let csv = "\ufeff구분,이름,날짜/코스,URL\n"; Object.values(allData.races || {}).forEach(r => csv += `대회,${r.name},${r.date},${r.url}\n`); const b = new Blob([csv], { type: 'text/csv' }); const l = document.createElement("a"); l.href = URL.createObjectURL(blob); l.download = "daltokki.csv"; l.click(); }
     </script>
 </body>
 </html>
