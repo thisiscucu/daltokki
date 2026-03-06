@@ -22,6 +22,7 @@
         input[type="date"]:focus::before, input[type="date"]:valid::before { display: none; }
         .scroll-mt-4 { scroll-margin-top: 1rem; }
         .tab-active { border-bottom: 3px solid #facc15; color: #facc15 !important; }
+        .sort-active { background-color: #facc15; color: #0f172a !important; border-radius: 6px; padding: 4px 8px; }
         .min-px { padding-left: 2px !important; padding-right: 2px !important; }
         table { width: 100%; border-spacing: 0; border-collapse: collapse; table-layout: auto !important; }
     </style>
@@ -60,9 +61,9 @@
         <div id="calendar-days" class="calendar-grid text-center gap-y-4 text-base font-black text-slate-600"></div>
     </section>
 
-    <section id="day-detail" class="px-4 mt-4 hidden">
+    <section id="day-detail" class="px-4 mt-4 hidden text-left">
         <h3 id="selected-date-label" class="text-[10px] font-black text-slate-400 mb-2 px-2 uppercase tracking-widest font-bold">Event Date</h3>
-        <div id="race-list-for-day" class="space-y-4 text-left"></div>
+        <div id="race-list-for-day" class="space-y-4"></div>
     </section>
 
     <div id="record-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden z-[60] flex flex-col text-left">
@@ -72,11 +73,8 @@
                 <button onclick="closeRecordRoom()" class="text-slate-400 text-2xl">×</button>
             </div>
             <div class="flex justify-between items-end">
-                <div class="flex gap-5 text-[15px] font-black text-slate-400 overflow-x-auto no-scrollbar whitespace-nowrap pb-2" id="record-tabs">
-                    <button onclick="changeRecordTab('all')" id="tab-all">All time</button>
-                    <button onclick="changeRecordTab('2026')" id="tab-2026" class="tab-active">26년</button>
-                    <button onclick="changeRecordTab('2025')" id="tab-2025">25년</button>
-                    <button onclick="changeRecordTab('prev')" id="tab-prev">이전</button>
+                <div class="flex gap-6 text-[15px] font-black text-slate-400 overflow-x-auto no-scrollbar whitespace-nowrap pb-2" id="record-tabs">
+                    <button onclick="changeRecordTab('pb')" id="tab-pb" class="tab-active">Personal Best</button>
                     <button onclick="changeRecordTab('sub3')" id="tab-sub3" class="text-yellow-500">Sub-3 👑</button>
                 </div>
                 <button onclick="openAddRecordModal()" class="bg-yellow-400 text-slate-900 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase shadow-lg mb-2 shrink-0 ml-4">기록 추가</button>
@@ -85,15 +83,16 @@
         <div class="flex-1 overflow-auto bg-white p-2">
             <div class="px-2 mb-2">
                 <span id="record-count-label" class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Total Runners: 0</span>
+                <div id="marathon-stats" class="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-[10px] font-black text-slate-500 border-t border-slate-50 pt-2"></div>
             </div>
-            <table class="w-full text-left border-collapse border-none">
+            <table class="w-full text-left border-collapse border-none mt-2">
                 <thead>
                     <tr class="text-[10px] text-slate-400 border-b border-slate-100 font-black">
-                        <th class="py-3 cursor-pointer min-px w-[110px]" onclick="sortRecords('name')">Rank Name ↕</th>
-                        <th class="py-3 cursor-pointer min-px" onclick="sortRecords('5k')">5K ↕</th>
-                        <th class="py-3 cursor-pointer min-px" onclick="sortRecords('10k')">10K ↕</th>
-                        <th class="py-3 cursor-pointer min-px" onclick="sortRecords('half')">Half ↕</th>
-                        <th class="py-3 cursor-pointer min-px" onclick="sortRecords('full')">Full ↕</th>
+                        <th class="py-3 cursor-pointer min-px w-[110px]" onclick="sortRecords('name')"><span id="sort-name">Rank Name ↕</span></th>
+                        <th class="py-3 cursor-pointer min-px text-center" onclick="sortRecords('5k')"><span id="sort-5k">5K ↕</span></th>
+                        <th class="py-3 cursor-pointer min-px text-center" onclick="sortRecords('10k')"><span id="sort-10k">10K ↕</span></th>
+                        <th class="py-3 cursor-pointer min-px text-center" onclick="sortRecords('half')"><span id="sort-half">Half ↕</span></th>
+                        <th class="py-3 cursor-pointer min-px text-center" onclick="sortRecords('full')"><span id="sort-full" class="sort-active">Full ↕</span></th>
                         <th class="py-3 text-center min-px w-[70px]" id="th-action"></th>
                     </tr>
                 </thead>
@@ -102,7 +101,7 @@
         </div>
     </div>
 
-    <div id="add-record-modal" class="fixed inset-0 bg-black/70 backdrop-blur-md hidden z-[70] flex items-center justify-center p-6 text-left font-bold"><div class="bg-white w-full max-w-sm rounded-[1rem] p-8 shadow-2xl"><h2 id="rec-modal-title" class="text-xl font-black mb-6 text-slate-800 uppercase">Update Record</h2><select id="rec-year" class="w-full bg-slate-50 border-none p-4 rounded-lg mb-4 outline-none font-bold shadow-inner appearance-none"><option value="2026">2026년</option><option value="2025">2025년</option><option value="prev">이전</option></select><input type="text" id="rec-name" placeholder="이름을 입력하세요" class="w-full bg-slate-50 border-none p-4 rounded-lg mb-4 outline-none font-bold shadow-inner"><div class="grid grid-cols-2 gap-3 mb-6"><input type="text" id="rec-5k" placeholder="5K (00:00)" oninput="formatRecord(this, 'short')" class="bg-slate-50 border-none p-3 rounded-lg outline-none text-sm shadow-inner record-font font-bold"><input type="text" id="rec-10k" placeholder="10K (00:00)" oninput="formatRecord(this, 'short')" class="bg-slate-50 border-none p-3 rounded-lg outline-none text-sm shadow-inner record-font font-bold"><input type="text" id="rec-half" placeholder="Half (0:00:00)" oninput="formatRecord(this, 'long')" class="bg-slate-50 border-none p-3 rounded-lg outline-none text-sm shadow-inner record-font font-bold"><input type="text" id="rec-full" placeholder="Full (0:00:00)" oninput="formatRecord(this, 'long')" class="bg-slate-50 border-none p-3 rounded-lg outline-none text-sm shadow-inner record-font font-bold"></div><div class="flex gap-3"><button onclick="closeAddRecordModal()" class="flex-1 py-4 font-black text-slate-400 text-sm uppercase">Cancel</button><button onclick="saveUserRecord()" class="flex-1 bg-yellow-400 text-slate-900 py-4 rounded-xl font-black shadow-lg text-sm uppercase">Save</button></div></div></div>
+    <div id="add-record-modal" class="fixed inset-0 bg-black/70 backdrop-blur-md hidden z-[70] flex items-center justify-center p-6 text-left font-bold"><div class="bg-white w-full max-w-sm rounded-[1rem] p-8 shadow-2xl"><h2 id="rec-modal-title" class="text-xl font-black mb-6 text-slate-800 uppercase">PB 기록 추가</h2><select id="rec-year" class="hidden"><option value="prev">prev</option></select><input type="text" id="rec-name" placeholder="이름을 입력하세요" class="w-full bg-slate-50 border-none p-4 rounded-lg mb-4 outline-none font-bold shadow-inner"><div class="grid grid-cols-2 gap-3 mb-6"><input type="text" id="rec-5k" placeholder="5K (00:00)" oninput="formatRecord(this, 'short')" class="bg-slate-50 border-none p-3 rounded-lg outline-none text-sm shadow-inner record-font font-bold"><input type="text" id="rec-10k" placeholder="10K (00:00)" oninput="formatRecord(this, 'short')" class="bg-slate-50 border-none p-3 rounded-lg outline-none text-sm shadow-inner record-font font-bold"><input type="text" id="rec-half" placeholder="Half (0:00:00)" oninput="formatRecord(this, 'long')" class="bg-slate-50 border-none p-3 rounded-lg outline-none text-sm shadow-inner record-font font-bold"><input type="text" id="rec-full" placeholder="Full (0:00:00)" oninput="formatRecord(this, 'long')" class="bg-slate-50 border-none p-3 rounded-lg outline-none text-sm shadow-inner record-font font-bold"></div><div class="flex gap-3"><button onclick="closeAddRecordModal()" class="flex-1 py-4 font-black text-slate-400 text-sm uppercase">Cancel</button><button onclick="saveUserRecord()" class="flex-1 bg-yellow-400 text-slate-900 py-4 rounded-xl font-black shadow-lg text-sm uppercase">Save</button></div></div></div>
     <div id="admin-modal" class="fixed inset-0 bg-black/70 backdrop-blur-md hidden z-50 flex items-center justify-center p-6 text-left font-bold"><div class="bg-white w-full max-w-md rounded-[1rem] p-8 shadow-2xl max-h-[90vh] overflow-y-auto"><h2 class="text-xl font-black mb-4 text-slate-800 uppercase">Data Manager</h2><textarea id="bulk-json-input" placeholder='JSON data...' class="w-full h-48 bg-slate-50 border-none p-4 rounded-lg mb-4 outline-none text-[10px] font-mono shadow-inner"></textarea><div class="grid grid-cols-2 gap-3 mb-6 font-black"><button onclick="importData()" class="bg-slate-900 text-white py-4 rounded-xl shadow-lg">Import</button><button onclick="exportData()" class="bg-yellow-400 text-slate-900 py-4 rounded-xl shadow-lg">Export</button></div><button onclick="closeAdminModal()" class="w-full py-2 font-black text-slate-400 uppercase text-xs">Close</button></div></div>
     <div id="race-modal" class="fixed inset-0 bg-black/70 backdrop-blur-md hidden z-50 flex items-center justify-center p-6 text-left font-bold"><div class="bg-white w-full max-w-sm rounded-[1rem] p-8 shadow-2xl font-bold"><h2 id="race-modal-title" class="text-xl font-black mb-6 text-slate-800 uppercase">New Race</h2><input type="text" id="new-race-name" placeholder="대회 명칭" class="w-full bg-slate-50 border-none p-4 rounded-lg mb-3 outline-none text-base font-bold shadow-inner"><input type="text" id="new-race-url" placeholder="대회 홈페이지 (URL)" class="w-full bg-slate-50 border-none p-4 rounded-lg mb-3 outline-none text-base font-bold shadow-inner"><input type="text" id="new-chat-url" placeholder="오픈채팅방 URL" class="w-full bg-slate-50 border-none p-4 rounded-lg mb-3 outline-none text-base font-bold shadow-inner"><input type="date" id="new-race-date" required class="w-full bg-slate-50 border-none p-4 rounded-lg mb-4 outline-none text-base font-black shadow-inner"><div class="flex flex-wrap gap-2 mb-6" id="course-checks"><label class="bg-slate-50 px-2 py-2 rounded-lg text-[10px] font-black"><input type="checkbox" value="5K"> 5K</label><label class="bg-slate-50 px-2 py-2 rounded-lg text-[10px] font-black"><input type="checkbox" value="10K"> 10K</label><label class="bg-slate-50 px-2 py-2 rounded-lg text-[10px] font-black"><input type="checkbox" value="Half"> Half</label><label class="bg-slate-50 px-2 py-2 rounded-lg text-[10px] font-black"><input type="checkbox" value="Full"> Full</label><label class="bg-slate-50 px-2 py-2 rounded-lg text-[10px] font-black"><input type="checkbox" value="Trail"> Trail</label><label class="bg-slate-50 px-2 py-2 rounded-lg text-[10px] font-black"><input type="checkbox" value="기타"> 기타</label></div><div class="flex gap-3 font-black"><button onclick="closeRaceModal()" class="flex-1 py-4 text-slate-400 text-sm uppercase">Cancel</button><button onclick="saveRace()" class="flex-1 bg-slate-900 text-white rounded-xl shadow-lg text-sm uppercase">Save</button></div></div></div>
     <div id="join-modal" class="fixed inset-0 bg-black/70 backdrop-blur-md hidden z-50 flex items-center justify-center p-6 text-left font-bold"><div class="bg-white w-full max-w-sm rounded-[1rem] p-8 shadow-2xl border-white/20"><h2 id="join-race-title" class="text-xl font-black mb-1 text-slate-800">Runner Info</h2><p id="join-race-date" class="text-xs text-slate-400 mb-6 font-black"></p><input type="text" id="user-name" placeholder="이름" class="w-full bg-slate-50 border-none p-4 rounded-lg mb-4 outline-none text-base font-bold shadow-inner"><div class="flex gap-8 mb-6 font-black text-sm"><label><input type="radio" name="gender" value="남" checked class="accent-slate-900"> 남성</label><label><input type="radio" name="gender" value="여" class="accent-slate-900"> 여성</label></div><select id="user-course" class="w-full bg-slate-50 border-none p-4 rounded-lg mb-8 outline-none text-slate-500 font-black shadow-inner"></select><div class="flex gap-3 font-black"><button onclick="closeJoinModal()" class="flex-1 py-4 font-black text-slate-400 text-sm uppercase">Cancel</button><button onclick="addParticipant()" class="flex-1 bg-yellow-400 text-slate-900 rounded-xl shadow-lg text-sm uppercase">Register</button></div></div></div>
@@ -116,7 +115,7 @@
         let currentYear = 2026;
         let currentMonth = new Date().getMonth() + 1;
         let selectedDate = null;
-        let currentRecordTab = '2026';
+        let currentRecordTab = 'pb';
         let sortKey = 'full';
         let sortDir = 1;
 
@@ -139,38 +138,110 @@
             } catch(e) { console.error("Fetch error", e); }
         }
 
-        function openRecordRoom() { changeRecordTab('2026'); document.getElementById('record-modal').classList.remove('hidden'); }
+        function openRecordRoom() { changeRecordTab('pb'); document.getElementById('record-modal').classList.remove('hidden'); }
         function closeRecordRoom() { document.getElementById('record-modal').classList.add('hidden'); }
-        function changeRecordTab(tab) { currentRecordTab = tab; document.querySelectorAll('#record-tabs button').forEach(b => b.classList.remove('tab-active')); const targetBtn = document.getElementById('tab-' + tab); if(targetBtn) targetBtn.classList.add('tab-active'); document.getElementById('th-action').style.display = (['all', 'sub3'].includes(tab)) ? 'none' : 'table-cell'; renderRecords(); }
-        function timeToSeconds(timeStr) { if (!timeStr || timeStr === '-' || timeStr.trim() === '') return 999999999; const parts = timeStr.split(':').map(Number); if (parts.length === 2) return parts[0] * 60 + parts[1]; if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2]; return 999999999; }
+        function changeRecordTab(tab) { currentRecordTab = tab; document.querySelectorAll('#record-tabs button').forEach(b => b.classList.remove('tab-active')); document.getElementById('tab-' + tab).classList.add('tab-active'); renderRecords(); }
+        function timeToSeconds(timeStr) { 
+            if (!timeStr || timeStr === '-' || timeStr.trim() === '') return 999999999; 
+            const parts = timeStr.split(':').map(Number); 
+            if (parts.length === 2) return parts[0] * 60 + parts[1]; 
+            if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2]; 
+            return 999999999; 
+        }
         
-        function renderRecords() { 
-            const body = document.getElementById('record-body'); body.innerHTML = ''; let dataToShow = []; 
-            const getAllTimeData = () => { const names = new Set([...Object.keys(allData.records["2026"] || {}), ...Object.keys(allData.records["2025"] || {}), ...Object.keys(allData.records["prev"] || {})]); return Array.from(names).map(name => { const best = { name, "5k": "-", "10k": "-", "half": "-", "full": "-" }; ["2026", "2025", "prev"].forEach(yr => { const rec = allData.records[yr] ? allData.records[yr][name] : null; if (rec) ["5k", "10k", "half", "full"].forEach(k => { if (rec[k] && rec[k] !== "-" && (best[k] === "-" || timeToSeconds(rec[k]) < timeToSeconds(best[k]))) best[k] = rec[k]; }); }); return best; }); }; 
-            
-            if (currentRecordTab === 'all') dataToShow = getAllTimeData();
-            else if (currentRecordTab === 'sub3') dataToShow = getAllTimeData().filter(r => timeToSeconds(r.full) <= 10799);
-            else Object.entries(allData.records[currentRecordTab] || {}).forEach(([name, rec]) => dataToShow.push({ name, ...rec }));
-            
-            // 💡 카운팅 라벨 업데이트
-            document.getElementById('record-count-label').innerText = `Total Runners: ${dataToShow.length}${currentRecordTab === 'sub3' ? ' 👑' : ''}`;
+        function getPBData() {
+            const names = new Set();
+            Object.values(allData.records).forEach(yrData => Object.keys(yrData).forEach(n => names.add(n)));
+            return Array.from(names).map(name => {
+                const best = { name, "5k": "-", "10k": "-", "half": "-", "full": "-" };
+                Object.values(allData.records).forEach(yrData => {
+                    const rec = yrData[name];
+                    if (rec) ["5k", "10k", "half", "full"].forEach(k => { if (rec[k] !== "-" && (best[k] === "-" || timeToSeconds(rec[k]) < timeToSeconds(best[k]))) best[k] = rec[k]; });
+                }
+                );
+                return best;
+            });
+        }
 
-            dataToShow.sort((a, b) => { let valA = a[sortKey] || "-"; let valB = b[sortKey] || "-"; if (sortKey === 'name') return valA.localeCompare(valB, 'ko') * sortDir; return (timeToSeconds(valA) - timeToSeconds(valB)) * sortDir; }); 
+        // 🏆 통계 업데이트 (소수점 제거 및 Sub3 탭 처리)
+        function updateMarathonStats(data) {
+            const statsContainer = document.getElementById('marathon-stats');
+            // 💡 Sub3 탭에서는 통계를 보여주지 않음
+            if (currentRecordTab === 'sub3' || data.length === 0) { statsContainer.innerHTML = ''; statsContainer.classList.add('hidden'); return; }
+            
+            statsContainer.classList.remove('hidden');
+            let sub3 = 0, single = 0, sub330 = 0, sub4 = 0;
+            data.forEach(r => {
+                const sec = timeToSeconds(r.full);
+                if (sec <= 10799) sub3++; 
+                else if (sec <= 11399) single++; 
+                else if (sec <= 12599) sub330++; 
+                else if (sec <= 14399) sub4++; 
+            });
+            // 💡 소수점 제거 (Math.round 적용)
+            const getPer = (num) => Math.round((num / data.length) * 100);
+            statsContainer.innerHTML = `
+                <span>SUB3: <b class="text-slate-800">${sub3}명 (${getPer(sub3)}%)</b></span>
+                <span>싱글: <b class="text-slate-800">${single}명 (${getPer(single)}%)</b></span>
+                <span>SUB330: <b class="text-slate-800">${sub330}명 (${getPer(sub330)}%)</b></span>
+                <span>SUB4: <b class="text-slate-800">${sub4}명 (${getPer(sub4)}%)</b></span>
+            `;
+        }
+
+        function renderRecords() { 
+            const body = document.getElementById('record-body'); body.innerHTML = '';
+            let dataToShow = getPBData();
+            
+            // 💡 Sub3 탭 문구 처리
+            if (currentRecordTab === 'sub3') {
+                dataToShow = dataToShow.filter(r => timeToSeconds(r.full) <= 10799);
+                document.getElementById('record-count-label').innerText = `SUB3 Runners: ${dataToShow.length} 👑`;
+            } else {
+                document.getElementById('record-count-label').innerText = `Total Runners: ${dataToShow.length}`;
+            }
+            
+            updateMarathonStats(dataToShow);
+
+            document.querySelectorAll('th span').forEach(el => el.classList.remove('sort-active'));
+            document.getElementById('sort-' + sortKey).classList.add('sort-active');
+
+            dataToShow.sort((a, b) => { 
+                let valA = a[sortKey] || "-"; let valB = b[sortKey] || "-"; 
+                if (sortKey === 'name') return valA.localeCompare(valB, 'ko') * sortDir; 
+                return (timeToSeconds(valA) - timeToSeconds(valB)) * sortDir; 
+            }); 
+
             dataToShow.forEach((r, idx) => {
-                const actionBtns = (['all', 'sub3'].includes(currentRecordTab)) ? '' : `<td class="py-4 text-center min-px"><div class="flex gap-1.5 justify-center"><button onclick="editUserRecord('${r.name}')" class="text-blue-500 text-[11px] font-black uppercase">EDIT</button><button onclick="deleteUserRecord('${r.name}')" class="text-red-400 text-[11px] font-black uppercase">DEL</button></div></td>`;
+                const actionBtns = (currentRecordTab === 'sub3') ? '' : `<td class="py-4 text-center min-px"><div class="flex gap-1.5 justify-center"><button onclick="editPBRecord('${r.name}')" class="text-blue-500 text-[11px] font-black">EDIT</button><button onclick="deleteUserRecord('${r.name}')" class="text-red-400 text-[11px] font-black">DEL</button></div></td>`;
                 let rankNum = idx + 1;
                 let rankLabel = (sortDir === 1 && rankNum <= 3) ? (rankNum === 1 ? "🥇" : rankNum === 2 ? "🥈" : "🥉") : `<span class="text-[12px] text-slate-500 record-font w-5 inline-block text-center">${rankNum}</span>`;
-                body.innerHTML += `<tr class="border-b border-slate-50"><td class="py-4 text-slate-900 min-px truncate"><span class="mr-1">${rankLabel}</span>${r.name}</td><td class="py-4 text-slate-500 record-font text-[12px] min-px">${r["5k"]}</td><td class="py-4 text-slate-500 record-font text-[12px] min-px">${r["10k"]}</td><td class="py-4 text-slate-500 record-font text-[12px] min-px">${r["half"]}</td><td class="py-4 text-slate-900 record-font text-[13px] font-black min-px">${r["full"]}</td>${actionBtns}</tr>`; 
+                body.innerHTML += `<tr class="border-b border-slate-50"><td class="py-4 text-slate-900 min-px truncate"><span class="mr-1">${rankLabel}</span>${r.name}</td><td class="py-4 text-slate-500 record-font text-[12px] min-px text-center">${r["5k"]}</td><td class="py-4 text-slate-500 record-font text-[12px] min-px text-center">${r["10k"]}</td><td class="py-4 text-slate-500 record-font text-[12px] min-px text-center">${r["half"]}</td><td class="py-4 text-slate-900 record-font text-[13px] font-black min-px text-center">${r["full"]}</td>${actionBtns}</tr>`; 
             }); 
         }
 
-        function formatRecord(input, type) { let val = input.value.replace(/[^0-9]/g, ""); let formatted = ""; if (type === 'short') { if (val.length > 2) formatted = val.slice(0, 2) + ":" + val.slice(2, 4); else formatted = val; } else { if (val.length > 5) formatted = val.slice(0, 1) + ":" + val.slice(1, 3) + ":" + val.slice(3, 5); else if (val.length > 3) formatted = val.slice(0, 1) + ":" + val.slice(1, 3) + ":" + val.slice(3); else if (val.length > 1) formatted = val.slice(0, 1) + ":" + val.slice(1); else formatted = val; } input.value = formatted; }
         function sortRecords(key) { sortDir = (sortKey === key) ? sortDir * -1 : 1; sortKey = key; renderRecords(); }
-        function openAddRecordModal() { document.getElementById('rec-modal-title').innerText = "Update Record"; document.getElementById('rec-year').disabled = false; document.getElementById('rec-year').value = (['all', 'sub3'].includes(currentRecordTab)) ? "2026" : currentRecordTab; document.getElementById('rec-name').value = ""; document.getElementById('rec-name').disabled = false; ['5k','10k','half','full'].forEach(id => document.getElementById(`rec-${id}`).value = ""); document.getElementById('add-record-modal').classList.remove('hidden'); }
+        function openAddRecordModal() { document.getElementById('rec-modal-title').innerText = "PB 기록 추가"; document.getElementById('rec-name').value = ""; document.getElementById('rec-name').disabled = false; ['5k','10k','half','full'].forEach(id => document.getElementById(`rec-${id}`).value = ""); document.getElementById('add-record-modal').classList.remove('hidden'); }
         function closeAddRecordModal() { document.getElementById('add-record-modal').classList.add('hidden'); }
-        function editUserRecord(name) { const rec = allData.records[currentRecordTab][name]; document.getElementById('rec-modal-title').innerText = "Edit Record"; document.getElementById('rec-year').value = currentRecordTab; document.getElementById('rec-year').disabled = true; document.getElementById('rec-name').value = name; document.getElementById('rec-name').disabled = true; ['5k','10k','half','full'].forEach(k => document.getElementById(`rec-${k}`).value = rec[k] === "-" ? "" : rec[k]); document.getElementById('add-record-modal').classList.remove('hidden'); }
-        async function deleteUserRecord(name) { if(confirm("삭제?")) { if(prompt("삭제 비밀번호") !== MASTER_PW) return; await fetch(`${DB_URL}/records/${currentRecordTab}/${name}.json`, { method: 'DELETE' }); fetchData(); } }
-        async function saveUserRecord() { const year = document.getElementById('rec-year').value; const name = document.getElementById('rec-name').value.trim(); if (!name) return alert("이름!"); if (!document.getElementById('rec-name').disabled && allData.records[year] && allData.records[year][name]) return alert("중복!"); const newRec = { "5k": document.getElementById('rec-5k').value || "-", "10k": document.getElementById('rec-10k').value || "-", "half": document.getElementById('rec-half').value || "-", "full": document.getElementById('rec-full').value || "-" }; await fetch(`${DB_URL}/records/${year}/${name}.json`, { method: 'PUT', body: JSON.stringify(newRec) }); closeAddRecordModal(); fetchData(); }
+        function editPBRecord(name) {
+            const pb = getPBData().find(r => r.name === name);
+            document.getElementById('rec-modal-title').innerText = "PB 기록 수정";
+            document.getElementById('rec-name').value = name;
+            document.getElementById('rec-name').disabled = true;
+            ['5k','10k','half','full'].forEach(k => document.getElementById(`rec-${k}`).value = pb[k] === "-" ? "" : pb[k]);
+            document.getElementById('add-record-modal').classList.remove('hidden');
+        }
+        async function deleteUserRecord(name) { if(confirm(`${name}님의 기록을 삭제하시겠습니까?`)) { if(prompt("삭제 비밀번호") !== MASTER_PW) return; await fetch(`${DB_URL}/records/prev/${name}.json`, { method: 'DELETE' }); fetchData(); } }
+        async function saveUserRecord() {
+            const name = document.getElementById('rec-name').value.trim();
+            if (!name) return alert("이름!");
+            await fetch(`${DB_URL}/records/prev/${name}.json`, { 
+                method: 'PUT', 
+                body: JSON.stringify({ "5k": document.getElementById('rec-5k').value || "-", "10k": document.getElementById('rec-10k').value || "-", "half": document.getElementById('rec-half').value || "-", "full": document.getElementById('rec-full').value || "-" }) 
+            });
+            closeAddRecordModal(); fetchData();
+        }
+
+        function formatRecord(input, type) { let val = input.value.replace(/[^0-9]/g, ""); let formatted = ""; if (type === 'short') { if (val.length > 2) formatted = val.slice(0, 2) + ":" + val.slice(2, 4); else formatted = val; } else { if (val.length > 5) formatted = val.slice(0, 1) + ":" + val.slice(1, 3) + ":" + val.slice(3, 5); else if (val.length > 3) formatted = val.slice(0, 1) + ":" + val.slice(1, 3) + ":" + val.slice(3); else if (val.length > 1) formatted = val.slice(0, 1) + ":" + val.slice(1); else formatted = val; } input.value = formatted; }
         function moveMonth(offset) { currentMonth += offset; if (currentMonth > 12) { currentMonth = 1; currentYear++; } else if (currentMonth < 1) { currentMonth = 12; currentYear--; } document.getElementById('month-select').value = currentMonth; changeMonth(); }
         function changeMonth() { currentMonth = parseInt(document.getElementById('month-select').value); selectedDate = null; renderAll(); }
         function initMonthSelect() { const select = document.getElementById('month-select'); select.innerHTML = ''; for(let i=1; i<=12; i++) { const opt = document.createElement('option'); opt.value = i; opt.innerText = i + '월'; if(i === currentMonth) opt.selected = true; select.appendChild(opt); } }
