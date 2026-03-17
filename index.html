@@ -37,8 +37,8 @@
                 <h1 class="text-2xl font-black italic tracking-tighter text-yellow-400 leading-none whitespace-nowrap">1987 DALTOKKI</h1>
             </div>
             <p class="text-slate-400 text-[8px] uppercase tracking-tight font-bold whitespace-nowrap">
-                <span onclick="checkAdminPassword()" class="cursor-default text-slate-400">When</span> The Moon Rises, We Run
-            </p>
+                <span class="cursor-default text-slate-400">When</span> The Moon Rises, We Run
+                </p>
         </div>
         <button onclick="openRecordRoom()" class="bg-yellow-400 text-slate-900 px-4 py-2 rounded-lg text-[11px] font-black uppercase shadow-lg mb-1">기록실</button>
     </header>
@@ -219,7 +219,16 @@
         }
 
         function sortRecords(key) { sortDir = (sortKey === key) ? sortDir * -1 : 1; sortKey = key; renderRecords(); }
-        function openAddRecordModal() { document.getElementById('rec-modal-title').innerText = "PB 기록 추가"; document.getElementById('rec-name').value = ""; document.getElementById('rec-name').disabled = false; ['5k','10k','half','full'].forEach(id => document.getElementById(`rec-${id}`).value = ""); document.getElementById('add-record-modal').classList.remove('hidden'); }
+        
+        // 3) 입력창 비우기 적용 (기록 추가)
+        function openAddRecordModal() { 
+            document.getElementById('rec-modal-title').innerText = "PB 기록 추가"; 
+            document.getElementById('rec-name').value = ""; 
+            document.getElementById('rec-name').disabled = false; 
+            ['5k','10k','half','full'].forEach(id => document.getElementById(`rec-${id}`).value = ""); 
+            document.getElementById('add-record-modal').classList.remove('hidden'); 
+        }
+        
         function closeAddRecordModal() { document.getElementById('add-record-modal').classList.add('hidden'); }
         function editAnyPBRecord(name) { const pb = getUnifiedPBData().find(r => r.name === name); if(!pb) return; document.getElementById('rec-modal-title').innerText = "PB 기록 수정"; document.getElementById('rec-name').value = name; document.getElementById('rec-name').disabled = true; ['5k','10k','half','full'].forEach(k => document.getElementById(`rec-${k}`).value = pb[k] === "-" ? "" : pb[k]); document.getElementById('add-record-modal').classList.remove('hidden'); }
         async function deleteAnyPBRecord(name) { if(!confirm(`${name}님의 기록을 삭제하시겠습니까?`)) return; if(prompt("삭제 비밀번호") !== MASTER_PW) return; const paths = ["pb", "2026", "2025", "prev"]; for (const p of paths) { const records = allData.records?.[p] || {}; const targetKey = Object.keys(records).find(k => k.trim() === name.trim()); if (targetKey) { await fetch(`${DB_URL}/records/${p}/${encodeURIComponent(targetKey)}.json`, { method: 'DELETE' }); } } fetchData(); }
@@ -232,17 +241,71 @@
         function renderAll() { renderCalendar(); renderMajorCards(); }
         function renderCalendar() { const container = document.getElementById('calendar-days'); container.innerHTML = ''; const firstDay = new Date(currentYear, currentMonth - 1, 1).getDay(); const lastDate = new Date(currentYear, currentMonth, 0).getDate(); for(let i=0; i<firstDay; i++) container.innerHTML += `<div></div>`; for(let i=1; i<=lastDate; i++) { const dateStr = `${currentYear}-${currentMonth}-${i}`; const racesForDay = Object.values(allData.races || {}).filter(r => isSameDate(r.date, dateStr)); let hasRace = racesForDay.some(r => r.courses && r.courses.some(c => c !== "기타")); let hasEvent = racesForDay.some(r => r.courses && r.courses.length === 1 && r.courses[0] === "기타"); const now = new Date(); const todayStr = `${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()}`; let isToday = isSameDate(dateStr, todayStr); let isSelected = isSameDate(dateStr, selectedDate); let bgStyle = isToday ? "bg-yellow-400 text-slate-900" : (isSelected ? "bg-slate-200 text-slate-900" : ""); container.innerHTML += `<div onclick="showDayDetail('${dateStr}', false)" class="h-10 flex flex-col items-center justify-center cursor-pointer font-black"><span class="${bgStyle} rounded-lg w-8 h-8 flex items-center justify-center text-sm shadow-sm">${i}</span><div class="flex gap-0.5 justify-center">${hasRace ? '<span class="dot-red"></span>' : ''}${hasEvent ? '<span class="dot-blue"></span>' : ''}</div></div>`; } }
         function renderMajorCards() { const container = document.getElementById('major-races'); container.innerHTML = ''; const now = new Date(); const todayStr = `${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()}`; const sortedRaces = Object.entries(allData.races || {}).sort((a, b) => { const partsA = a[1].date.split('-').map(v => parseInt(v)); const partsB = b[1].date.split('-').map(v => parseInt(v)); return (partsA[0]-partsB[0]) || (partsA[1]-partsB[1]) || (partsA[2]-partsB[2]); }); let firstFutureIndex = -1; sortedRaces.forEach(([id, race], index) => { const isEventOnly = race.courses && race.courses.length === 1 && race.courses[0] === "기타"; const nowParts = todayStr.split('-').map(Number); const raceParts = race.date.split('-').map(Number); const isPast = (raceParts[0] < nowParts[0]) || (raceParts[0] === nowParts[0] && raceParts[1] < nowParts[1]) || (raceParts[0] === nowParts[0] && raceParts[1] === nowParts[1] && raceParts[2] < nowParts[2]); if (firstFutureIndex === -1 && !isPast) firstFutureIndex = index; container.innerHTML += `<div id="card-${index}" onclick="showDayDetail('${race.date}', true)" class="min-w-[140px] bg-white p-4 rounded-[1rem] shadow-sm border border-slate-100 flex-shrink-0 font-black uppercase ${isPast ? 'opacity-40' : ''}"><p class="text-[9px] ${isEventOnly ? 'text-blue-500' : 'text-yellow-500'} mb-1 font-bold text-left">${isEventOnly ? 'EVENT' : 'RACE'}</p><h4 class="text-slate-800 truncate text-[11px] font-bold text-left">${race.name}</h4><p class="text-[9px] text-slate-400 mt-1 text-left font-bold">${race.date}</p></div>`; }); if (firstFutureIndex !== -1) setTimeout(() => { const card = document.getElementById(`card-${firstFutureIndex}`); if (card) container.scrollLeft = card.offsetLeft - 20; }, 100); }
-        function showDayDetail(dateStr, shouldScroll) { selectedDate = dateStr; const container = document.getElementById('race-list-for-day'); const detailSection = document.getElementById('day-detail'); const pts = dateStr.split('-'); document.getElementById('selected-date-label').innerText = `${pts[0]}-${pts[1].padStart(2,'0')}-${pts[2].padStart(2,'0')}`; container.innerHTML = ''; renderCalendar(); const dayRaces = Object.entries(allData.races || {}).filter(([id, r]) => isSameDate(r.date, selectedDate)); if(dayRaces.length > 0) { detailSection.classList.remove('hidden'); dayRaces.forEach(([id, race], idx) => { const pList = Object.entries(allData.participants || {}).filter(([pid, p]) => p.raceId === id).sort((a, b) => a[1].name.localeCompare(b[1].name, 'ko')); const isEventOnly = (race.courses && race.courses.length === 1 && race.courses[0] === "기타"); container.innerHTML += `<div id="target-${idx}" class="bg-white rounded-[1rem] p-6 shadow-sm border border-slate-100 border-t-[4px] ${isEventOnly ? 'border-t-blue-400' : 'border-t-yellow-400'} scroll-mt-4 text-left font-bold"><div class="flex justify-between items-start mb-1 font-black"><h4 class="text-lg text-slate-800 leading-tight uppercase font-black text-left">${race.name}</h4><div class="flex gap-2"><button onclick="editRace('${id}')" class="text-[9px] text-slate-400 font-black uppercase">Edit</button><button onclick="deleteRace('${id}')" class="text-[9px] text-red-400 font-black uppercase">Del</button><button onclick="openJoinModal('${id}')" class="bg-slate-900 text-white px-4 py-2 rounded-xl text-[10px] font-black shadow-lg ml-2 uppercase">Join</button></div></div>${race.url ? `<a href="${race.url}" target="_blank" class="text-[10px] text-blue-500 font-black underline block mb-1 uppercase">🔗 대회 홈페이지</a>` : ''}${race.chatUrl ? `<a href="${race.chatUrl}" target="_blank" class="text-[10px] text-green-600 font-black underline block mb-2 uppercase">💬 오픈채팅방</a>` : ''}<p class="text-[10px] text-slate-400 mb-4 uppercase font-black text-left">${race.courses.join(' / ')}</p><div class="bg-slate-50 rounded-[1rem] p-4 border border-slate-100"><p class="text-[9px] font-black text-slate-300 mb-3 uppercase tracking-widest text-left">Team Runners (${pList.length})</p><div class="space-y-3">${pList.map(([pid, p]) => `<div class="flex justify-between items-center text-sm font-bold"><span class="font-black text-slate-700">${p.name} <small class="text-slate-400 ml-1 uppercase">${p.gender}</small></span><div class="flex items-center gap-3"><span class="bg-yellow-200 text-slate-800 px-2 py-0.5 rounded-lg font-black text-[9px] uppercase">${p.course}</span><button onclick="deleteParticipant('${pid}')" class="text-red-300 font-black text-lg">×</button></div></div>`).join('')}</div></div></div>`; }); if (shouldScroll) setTimeout(() => { const target = document.getElementById(`target-0`); if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 50); } else detailSection.classList.add('hidden'); }
+        
+        // 1) 대회 목록 정렬 로직 (참가자 순 -> 가나다 순)
+        function showDayDetail(dateStr, shouldScroll) { 
+            selectedDate = dateStr; 
+            const container = document.getElementById('race-list-for-day'); 
+            const detailSection = document.getElementById('day-detail'); 
+            const pts = dateStr.split('-'); 
+            document.getElementById('selected-date-label').innerText = `${pts[0]}-${pts[1].padStart(2,'0')}-${pts[2].padStart(2,'0')}`; 
+            container.innerHTML = ''; 
+            renderCalendar(); 
+            
+            const dayRaces = Object.entries(allData.races || {})
+                .filter(([id, r]) => isSameDate(r.date, selectedDate))
+                .sort((a, b) => {
+                    const countA = Object.values(allData.participants || {}).filter(p => p.raceId === a[0]).length;
+                    const countB = Object.values(allData.participants || {}).filter(p => p.raceId === b[0]).length;
+                    if (countB !== countA) return countB - countA; // 1순위: 참가자 많은 순
+                    return a[1].name.localeCompare(b[1].name, 'ko'); // 2순위: 가나다 순
+                });
+
+            if(dayRaces.length > 0) { 
+                detailSection.classList.remove('hidden'); 
+                dayRaces.forEach(([id, race], idx) => { 
+                    const pList = Object.entries(allData.participants || {}).filter(([pid, p]) => p.raceId === id).sort((a, b) => a[1].name.localeCompare(b[1].name, 'ko')); 
+                    const isEventOnly = (race.courses && race.courses.length === 1 && race.courses[0] === "기타"); 
+                    container.innerHTML += `<div id="target-${idx}" class="bg-white rounded-[1rem] p-6 shadow-sm border border-slate-100 border-t-[4px] ${isEventOnly ? 'border-t-blue-400' : 'border-t-yellow-400'} scroll-mt-4 text-left font-bold"><div class="flex justify-between items-start mb-1 font-black"><h4 class="text-lg text-slate-800 leading-tight uppercase font-black text-left">${race.name}</h4><div class="flex gap-2"><button onclick="editRace('${id}')" class="text-[9px] text-slate-400 font-black uppercase">Edit</button><button onclick="deleteRace('${id}')" class="text-[9px] text-red-400 font-black uppercase">Del</button><button onclick="openJoinModal('${id}')" class="bg-slate-900 text-white px-4 py-2 rounded-xl text-[10px] font-black shadow-lg ml-2 uppercase">Join</button></div></div>${race.url ? `<a href="${race.url}" target="_blank" class="text-[10px] text-blue-500 font-black underline block mb-1 uppercase">🔗 대회 홈페이지</a>` : ''}${race.chatUrl ? `<a href="${race.chatUrl}" target="_blank" class="text-[10px] text-green-600 font-black underline block mb-2 uppercase">💬 오픈채팅방</a>` : ''}<p class="text-[10px] text-slate-400 mb-4 uppercase font-black text-left">${race.courses.join(' / ')}</p><div class="bg-slate-50 rounded-[1rem] p-4 border border-slate-100"><p class="text-[9px] font-black text-slate-300 mb-3 uppercase tracking-widest text-left">Team Runners (${pList.length})</p><div class="space-y-3">${pList.map(([pid, p]) => `<div class="flex justify-between items-center text-sm font-bold"><span class="font-black text-slate-700">${p.name} <small class="text-slate-400 ml-1 uppercase">${p.gender}</small></span><div class="flex items-center gap-3"><span class="bg-yellow-200 text-slate-800 px-2 py-0.5 rounded-lg font-black text-[9px] uppercase">${p.course}</span><button onclick="deleteParticipant('${pid}')" class="text-red-300 font-black text-lg">×</button></div></div>`).join('')}</div></div></div>`; 
+                }); 
+                if (shouldScroll) setTimeout(() => { const target = document.getElementById(`target-0`); if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 50); 
+            } else detailSection.classList.add('hidden'); 
+        }
+
         function checkAdminPassword() { const pw = prompt("Admin 비밀번호"); if (pw === ADMIN_PW) openAdminModal(); else if(pw) alert("틀림"); }
         function openAdminModal() { document.getElementById('admin-modal').classList.remove('hidden'); }
         function closeAdminModal() { document.getElementById('admin-modal').classList.add('hidden'); }
-        function openRaceModal() { editingRaceId = null; document.getElementById('race-modal-title').innerText = "New Race"; ['new-race-name','new-race-url','new-chat-url','new-race-date'].forEach(id => document.getElementById(id).value=""); document.querySelectorAll('#course-checks input').forEach(c => c.checked = false); document.getElementById('race-modal').classList.remove('hidden'); }
+        
+        // 3) 입력창 비우기 적용 (대회 등록)
+        function openRaceModal() { 
+            editingRaceId = null; 
+            document.getElementById('race-modal-title').innerText = "New Race"; 
+            ['new-race-name','new-race-url','new-chat-url','new-race-date'].forEach(id => document.getElementById(id).value=""); 
+            document.querySelectorAll('#course-checks input').forEach(c => c.checked = false); 
+            document.getElementById('race-modal').classList.remove('hidden'); 
+        }
+        
         function closeRaceModal() { document.getElementById('race-modal').classList.add('hidden'); }
         let editingRaceId = null; let activeRaceId = null;
         function editRace(id) { editingRaceId = id; const r = allData.races[id]; document.getElementById('race-modal-title').innerText = "Edit Race"; document.getElementById('new-race-name').value = r.name; document.getElementById('new-race-url').value = r.url || ""; document.getElementById('new-chat-url').value = r.chatUrl || ""; document.getElementById('new-race-date').value = r.date; document.querySelectorAll('#course-checks input').forEach(c => c.checked = r.courses.includes(c.value)); document.getElementById('race-modal').classList.remove('hidden'); }
         async function saveRace() { const n = document.getElementById('new-race-name').value; const d = document.getElementById('new-race-date').value; const cs = Array.from(document.querySelectorAll('#course-checks input:checked')).map(cb => cb.value); if(!n || !d || cs.length === 0) return alert('필수 입력'); const ext = editingRaceId ? `races/${editingRaceId}.json` : 'races.json'; await fetch(`${DB_URL}/${ext}`, { method: editingRaceId ? 'PATCH' : 'POST', body: JSON.stringify({ name:n, url:document.getElementById('new-race-url').value, chatUrl:document.getElementById('new-chat-url').value, date:d, courses:cs }) }); selectedDate = d; closeRaceModal(); fetchData(); }
         async function deleteRace(id) { if(prompt("삭제 암호") !== MASTER_PW) return; await fetch(`${DB_URL}/races/${id}.json`, { method: 'DELETE' }); selectedDate = null; fetchData(); }
-        function openJoinModal(id) { activeRaceId = id; const r = allData.races[id]; document.getElementById('join-race-title').innerText = r.name; document.getElementById('join-race-date').innerText = r.date; const s = document.getElementById('user-course'); s.innerHTML = `<option value="">코스 선택</option>${r.courses.map(c => `<option value="${c}">${c}</option>`).join('')}<option value="응원">응원</option>`; document.getElementById('join-modal').classList.remove('hidden'); }
+        
+        // 3) 입력창 비우기 적용 (참가 신청)
+        function openJoinModal(id) { 
+            activeRaceId = id; 
+            const r = allData.races[id]; 
+            document.getElementById('join-race-title').innerText = r.name; 
+            document.getElementById('join-race-date').innerText = r.date; 
+            
+            // 이름 입력창 비우기
+            document.getElementById('user-name').value = "";
+            
+            const s = document.getElementById('user-course'); 
+            s.innerHTML = `<option value="">코스 선택</option>${r.courses.map(c => `<option value="${c}">${c}</option>`).join('')}<option value="응원">응원</option>`; 
+            document.getElementById('join-modal').classList.remove('hidden'); 
+        }
+        
         function closeJoinModal() { document.getElementById('join-modal').classList.add('hidden'); }
         async function addParticipant() { const n = document.getElementById('user-name').value; const c = document.getElementById('user-course').value; if(!n || !c) return; await fetch(`${DB_URL}/participants.json`, { method: 'POST', body: JSON.stringify({ raceId: activeRaceId, name: n, gender: document.querySelector('input[name="gender"]:checked').value, course: c }) }); closeJoinModal(); fetchData(); }
         async function deleteParticipant(pid) { if(prompt("삭제 암호") !== MASTER_PW) return; await fetch(`${DB_URL}/participants/${pid}.json`, { method: 'DELETE' }); fetchData(); }
