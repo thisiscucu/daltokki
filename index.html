@@ -14,6 +14,22 @@
         body { font-family: 'Pretendard', sans-serif; background-color: #f3f4f6; -webkit-tap-highlight-color: transparent; touch-action: manipulation; overflow-x: hidden; width: 100%; }
         .record-font { font-family: 'Roboto Mono', monospace; font-variant-numeric: tabular-nums; }
         input, select, textarea { font-size: 16px !important; }
+        
+        /* 💡 1) 모든 브라우저 날짜 입력창 안내 문구 강제 적용 */
+        input[type="date"] { position: relative; }
+        input[type="date"]::before {
+            content: "📅 날짜 선택";
+            position: absolute;
+            left: 1rem;
+            color: #94a3b8;
+            pointer-events: none;
+            width: 100%;
+        }
+        input[type="date"]:focus::before,
+        input[type="date"]:valid::before {
+            display: none;
+        }
+
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); }
         .dot-red { height: 5px; width: 5px; background-color: #ef4444; border-radius: 50%; display: inline-block; margin-top: 2px; }
         .dot-blue { height: 5px; width: 5px; background-color: #3b82f6; border-radius: 50%; display: inline-block; margin-top: 2px; }
@@ -23,12 +39,11 @@
         .min-px { padding-left: 2px !important; padding-right: 2px !important; }
         table { width: 100%; border-spacing: 0; border-collapse: collapse; table-layout: fixed !important; }
         
-        /* 💡 코스별 컬러 및 글자색 블랙 통일 */
-        .badge-full { background-color: #fef08a; color: #000000; } /* 1) Full을 노란색으로 */
+        .badge-full { background-color: #fef08a; color: #000000; }
         .badge-half { background-color: #dbeafe; color: #000000; } 
-        .badge-10k { background-color: #ecfdf5; color: #000000; border: 1px solid #d1fae5; } /* 3) 10K 채도 낮춤 */
+        .badge-10k { background-color: #ecfdf5; color: #000000; border: 1px solid #d1fae5; }
         .badge-5k { background-color: #f3e8ff; color: #000000; }  
-        .badge-default { background-color: #e2e8f0; color: #000000; } /* 1) 기타/응원 등을 회색으로 */
+        .badge-default { background-color: #e2e8f0; color: #000000; }
     </style>
 </head>
 <body class="pb-10 text-left overflow-x-hidden">
@@ -197,10 +212,20 @@
         function openAddRecordModal() { document.getElementById('rec-modal-title').innerText = "PB 기록 추가"; document.getElementById('rec-name').value = ""; document.getElementById('rec-name').disabled = false; ['5k','10k','half','full'].forEach(id => document.getElementById(`rec-${id}`).value = ""); document.getElementById('add-record-modal').classList.remove('hidden'); }
         function closeAddRecordModal() { document.getElementById('add-record-modal').classList.add('hidden'); }
         function editAnyPBRecord(name) { const pb = getUnifiedPBData().find(r => r.name === name); if(!pb) return; document.getElementById('rec-modal-title').innerText = "PB 기록 수정"; document.getElementById('rec-name').value = name; document.getElementById('rec-name').disabled = true; ['5k','10k','half','full'].forEach(k => document.getElementById(`rec-${k}`).value = pb[k] === "-" ? "" : pb[k]); document.getElementById('add-record-modal').classList.remove('hidden'); }
-        async function deleteAnyPBRecord(name) { if(!confirm(`${name}님의 기록을 삭제하시겠습니까?`)) return; const input = prompt("삭제 비밀번호를 입력하세요."); if(_v(input) !== _k1) { alert("비밀번호가 틀렸습니다."); return; } const paths = ["pb", "2026", "2025", "prev"]; for (const p of paths) { const records = allData.records?.[p] || {}; const targetKey = Object.keys(records).find(k => k.trim() === name.trim()); if (targetKey) await fetch(`${DB_URL}/records/${p}/${encodeURIComponent(targetKey)}.json`, { method: 'DELETE' }); } fetchData(); }
-        async function saveUserRecord() { const name = document.getElementById('rec-name').value.trim(); if (!name) return alert("이름을 입력하세요!"); const paths = ["pb", "2026", "2025", "prev"]; for (const p of paths) { const records = allData.records?.[p] || {}; const oldKey = Object.keys(records).find(k => k.trim() === name); if (oldKey) await fetch(`${DB_URL}/records/${p}/${encodeURIComponent(oldKey)}.json`, { method: 'DELETE' }); } await fetch(`${DB_URL}/records/pb/${encodeURIComponent(name)}.json`, { method: 'PUT', body: JSON.stringify({ "5k": document.getElementById('rec-5k').value || "-", "10k": document.getElementById('rec-10k').value || "-", "half": document.getElementById('rec-half').value || "-", "full": document.getElementById('rec-full').value || "-" }) }); closeAddRecordModal(); fetchData(); }
+        
+        async function deleteAnyPBRecord(name) { 
+            if(!confirm(`${name}님의 기록을 삭제하시겠습니까?`)) return; 
+            const pwInput = prompt("삭제 비밀번호를 입력하세요."); 
+            if(pwInput !== MASTER_PW) { alert("비밀번호가 틀렸습니다."); return; } 
+            const paths = ["pb", "2026", "2025", "prev"]; 
+            for (const p of paths) { 
+                const records = allData.records?.[p] || {}; 
+                const targetKey = Object.keys(records).find(k => k.trim() === name.trim()); 
+                if (targetKey) await fetch(`${DB_URL}/records/${p}/${encodeURIComponent(targetKey)}.json`, { method: 'DELETE' }); 
+            } fetchData(); 
+        }
 
-        function formatRecord(input, type) { let val = input.value.replace(/[^0-9]/g, ""); let formatted = ""; if (type === 'short') { if (val.length > 2) formatted = val.slice(0, 2) + ":" + val.slice(2, 4); else formatted = val; } else { if (val.length > 5) formatted = val.slice(0, 1) + ":" + val.slice(1, 3) + ":" + val.slice(3, 5); else if (val.length > 3) formatted = val.slice(0, 1) + ":" + val.slice(1, 3) + ":" + val.slice(3); else if (val.length > 1) formatted = val.slice(0, 1) + ":" + val.slice(1); else formatted = val; } input.value = formatted; }
+        async function saveUserRecord() { const name = document.getElementById('rec-name').value.trim(); if (!name) return alert("이름을 입력하세요!"); const paths = ["pb", "2026", "2025", "prev"]; for (const p of paths) { const records = allData.records?.[p] || {}; const oldKey = Object.keys(records).find(k => k.trim() === name); if (oldKey) await fetch(`${DB_URL}/records/${p}/${encodeURIComponent(oldKey)}.json`, { method: 'DELETE' }); } await fetch(`${DB_URL}/records/pb/${encodeURIComponent(name)}.json`, { method: 'PUT', body: JSON.stringify({ "5k": document.getElementById('rec-5k').value || "-", "10k": document.getElementById('rec-10k').value || "-", "half": document.getElementById('rec-half').value || "-", "full": document.getElementById('rec-full').value || "-" }) }); closeAddRecordModal(); fetchData(); }
         function moveMonth(offset) { currentMonth += offset; if (currentMonth > 12) { currentMonth = 1; currentYear++; } else if (currentMonth < 1) { currentMonth = 12; currentYear--; } document.getElementById('month-select').value = currentMonth; changeMonth(); }
         function changeMonth() { currentMonth = parseInt(document.getElementById('month-select').value); selectedDate = null; renderAll(); }
         function initMonthSelect() { const select = document.getElementById('month-select'); select.innerHTML = ''; for(let i=1; i<=12; i++) { const opt = document.createElement('option'); opt.value = i; opt.innerText = i + '월'; if(i === currentMonth) opt.selected = true; select.appendChild(opt); } }
@@ -246,15 +271,23 @@
             } else detailSection.classList.add('hidden'); 
         }
 
-        function checkAdminPassword() { const pw = prompt("Admin 비밀번호"); if (pw === ADMIN_PW) openAdminModal(); else if(pw) alert("틀림"); }
+        function checkAdminPassword() { const pwInput = prompt("Admin 비밀번호"); if (pwInput === ADMIN_PW) openAdminModal(); else if(pwInput) alert("틀림"); }
         function openAdminModal() { document.getElementById('admin-modal').classList.remove('hidden'); }
         function closeAdminModal() { document.getElementById('admin-modal').classList.add('hidden'); }
-        function openRaceModal() { editingRaceId = null; document.getElementById('race-modal-title').innerText = "New Race"; ['new-race-name','new-race-url','new-chat-url','new-race-date'].forEach(id => document.getElementById(id).value=""); document.querySelectorAll('#course-checks input').forEach(c => c.checked = false); document.getElementById('race-modal').classList.remove('hidden'); }
+        
+        function openRaceModal() { 
+            editingRaceId = null; 
+            document.getElementById('race-modal-title').innerText = "New Race"; 
+            ['new-race-name','new-race-url','new-chat-url','new-race-date'].forEach(id => document.getElementById(id).value=""); 
+            document.querySelectorAll('#course-checks input').forEach(c => c.checked = false); 
+            document.getElementById('race-modal').classList.remove('hidden'); 
+        }
+        
         function closeRaceModal() { document.getElementById('race-modal').classList.add('hidden'); }
         let editingRaceId = null; let activeRaceId = null;
         function editRace(id) { editingRaceId = id; const r = allData.races[id]; document.getElementById('race-modal-title').innerText = "Edit Race"; document.getElementById('new-race-name').value = r.name; document.getElementById('new-race-url').value = r.url || ""; document.getElementById('new-chat-url').value = r.chatUrl || ""; document.getElementById('new-race-date').value = r.date; document.querySelectorAll('#course-checks input').forEach(c => c.checked = r.courses.includes(c.value)); document.getElementById('race-modal').classList.remove('hidden'); }
         async function saveRace() { const n = document.getElementById('new-race-name').value; const d = document.getElementById('new-race-date').value; const cs = Array.from(document.querySelectorAll('#course-checks input:checked')).map(cb => cb.value); if(!n || !d || cs.length === 0) return alert('필수 입력'); const ext = editingRaceId ? `races/${editingRaceId}.json` : 'races.json'; await fetch(`${DB_URL}/${ext}`, { method: editingRaceId ? 'PATCH' : 'POST', body: JSON.stringify({ name:n, url:document.getElementById('new-race-url').value, chatUrl:document.getElementById('new-chat-url').value, date:d, courses:cs }) }); selectedDate = d; closeRaceModal(); fetchData(); }
-        async function deleteRace(id) { if(prompt("삭제 암호") !== MASTER_PW) return; await fetch(`${DB_URL}/races/${id}.json`, { method: 'DELETE' }); selectedDate = null; fetchData(); }
+        async function deleteRace(id) { const pwInput = prompt("삭제 암호"); if(pwInput !== MASTER_PW) return; await fetch(`${DB_URL}/races/${id}.json`, { method: 'DELETE' }); selectedDate = null; fetchData(); }
         
         function openJoinModal(id) { 
             activeRaceId = id; 
@@ -265,7 +298,6 @@
             const isEventOnly = (r.courses && r.courses.length === 1 && r.courses[0] === "기타");
             const s = document.getElementById('user-course'); 
             if (isEventOnly) {
-                // 4) Event 대회 옵션: 정회원, 가족만 남김
                 s.innerHTML = `<option value="">참가 방식 선택</option><option value="정회원">정회원</option><option value="가족">가족</option>`;
             } else {
                 s.innerHTML = `<option value="">코스 선택</option>${r.courses.map(c => `<option value="${c}">${c}</option>`).join('')}<option value="포토">포토</option><option value="응원">응원</option>`;
@@ -275,7 +307,7 @@
         
         function closeJoinModal() { document.getElementById('join-modal').classList.add('hidden'); }
         async function addParticipant() { const n = document.getElementById('user-name').value; const c = document.getElementById('user-course').value; if(!n || !c) return; await fetch(`${DB_URL}/participants.json`, { method: 'POST', body: JSON.stringify({ raceId: activeRaceId, name: n, gender: document.querySelector('input[name="gender"]:checked').value, course: c }) }); closeJoinModal(); fetchData(); }
-        async function deleteParticipant(pid) { if(prompt("삭제 암호") !== MASTER_PW) return; await fetch(`${DB_URL}/participants/${pid}.json`, { method: 'DELETE' }); fetchData(); }
+        async function deleteParticipant(pid) { const pwInput = prompt("삭제 암호"); if(pwInput !== MASTER_PW) return; await fetch(`${DB_URL}/participants/${pid}.json`, { method: 'DELETE' }); fetchData(); }
         async function importData() { const raw = document.getElementById('bulk-json-input').value; if(!raw) return; try { const d = JSON.parse(raw); if(confirm("업로드?")) { await fetch(`${DB_URL}/.json`, { method: 'PUT', body: JSON.stringify(d) }); location.reload(); } } catch(e) { alert("오류"); } }
         function exportData() { let csv = "\ufeff구분,이름,날짜/코스,URL\n"; Object.values(allData.races || {}).forEach(r => csv += `대회,${r.name},${r.date},${r.url}\n`); const b = new Blob([csv], { type: 'text/csv' }); const l = document.createElement("a"); l.href = URL.createObjectURL(blob); l.download = "daltokki.csv"; l.click(); }
     </script>
