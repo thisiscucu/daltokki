@@ -15,7 +15,6 @@
         .record-font { font-family: 'Roboto Mono', monospace; font-variant-numeric: tabular-nums; }
         input, select, textarea { font-size: 16px !important; }
         
-        /* 💡 1) 모든 브라우저 날짜 입력창 안내 문구 강제 적용 */
         input[type="date"] { position: relative; }
         input[type="date"]::before {
             content: "📅 날짜 선택";
@@ -26,9 +25,7 @@
             width: 100%;
         }
         input[type="date"]:focus::before,
-        input[type="date"]:valid::before {
-            display: none;
-        }
+        input[type="date"]:valid::before { display: none; }
 
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); }
         .dot-red { height: 5px; width: 5px; background-color: #ef4444; border-radius: 50%; display: inline-block; margin-top: 2px; }
@@ -44,6 +41,73 @@
         .badge-10k { background-color: #ecfdf5; color: #000000; border: 1px solid #d1fae5; }
         .badge-5k { background-color: #f3e8ff; color: #000000; }  
         .badge-default { background-color: #e2e8f0; color: #000000; }
+
+        /* ===== LAB STYLES ===== */
+        .lab-tab-active { background-color: #facc15; color: #0f172a !important; border-radius: 8px; }
+        .lab-sub-active { background-color: #1e293b; color: #facc15 !important; }
+
+        .lab-input {
+            width: 100%;
+            background: #f8fafc;
+            border: 1.5px solid #e2e8f0;
+            padding: 14px 16px;
+            border-radius: 12px;
+            outline: none;
+            font-weight: 700;
+            color: #0f172a;
+            transition: border-color 0.15s;
+        }
+        .lab-input:focus { border-color: #facc15; background: #fffbeb; }
+
+        .lab-select {
+            width: 100%;
+            background: #f8fafc;
+            border: 1.5px solid #e2e8f0;
+            padding: 14px 16px;
+            border-radius: 12px;
+            outline: none;
+            font-weight: 700;
+            color: #0f172a;
+            appearance: none;
+            -webkit-appearance: none;
+        }
+
+        .lab-result-box {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            border-radius: 16px;
+            padding: 20px;
+            color: white;
+            text-align: center;
+        }
+
+        .lab-calc-btn {
+            width: 100%;
+            background: #facc15;
+            color: #0f172a;
+            padding: 16px;
+            border-radius: 14px;
+            font-weight: 900;
+            font-size: 15px;
+            border: none;
+            cursor: pointer;
+            letter-spacing: -0.3px;
+            transition: transform 0.1s, box-shadow 0.1s;
+            box-shadow: 0 4px 14px rgba(250,204,21,0.35);
+        }
+        .lab-calc-btn:active { transform: scale(0.97); }
+
+        .weight-table tr:nth-child(even) { background: #f8fafc; }
+        .weight-table td { padding: 10px 8px; text-align: center; font-size: 13px; }
+        .weight-table th { padding: 8px; text-align: center; font-size: 11px; background: #1e293b; color: #94a3b8; }
+        .weight-highlight { background: #fffbeb !important; font-weight: 900; color: #0f172a; }
+        .weight-better { color: #16a34a; font-weight: 800; }
+        .weight-worse { color: #dc2626; font-weight: 800; }
+
+        .time-input-row { display: flex; gap: 6px; align-items: center; }
+        .time-input-row input { flex: 1; text-align: center; }
+        .time-sep { font-weight: 900; color: #94a3b8; font-size: 18px; flex-shrink: 0; }
+        .dist-btn { flex: 1; padding: 8px 4px; background: #f1f5f9; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 12px; font-weight: 900; color: #475569; cursor: pointer; transition: all 0.15s; }
+        .dist-btn:active, .dist-btn.active { background: #0f172a; color: #facc15; border-color: #0f172a; }
     </style>
 </head>
 <body class="pb-10 text-left overflow-x-hidden">
@@ -57,7 +121,10 @@
                 <span class="cursor-default text-slate-400">When</span> The Moon Rises, We Run
             </p>
         </div>
-        <button onclick="openRecordRoom()" class="bg-yellow-400 text-slate-900 px-4 py-2 rounded-lg text-[11px] font-black uppercase shadow-lg mb-1">기록실</button>
+        <div class="flex gap-2 mb-1">
+            <button onclick="openLabModal()" class="bg-yellow-400 text-slate-900 px-4 py-2 rounded-lg text-[11px] font-black uppercase shadow-lg">연구실</button>
+            <button onclick="openRecordRoom()" class="bg-yellow-400 text-slate-900 px-4 py-2 rounded-lg text-[11px] font-black uppercase shadow-lg">기록실</button>
+        </div>
     </header>
 
     <section class="mt-4 px-4 overflow-hidden"><div class="flex space-x-3 overflow-x-auto pb-2 no-scrollbar scroll-smooth" id="major-races"></div></section>
@@ -78,6 +145,223 @@
 
     <section id="day-detail" class="px-4 mt-4 hidden text-left"><h3 id="selected-date-label" class="text-[10px] font-black text-slate-400 mb-2 px-2 uppercase tracking-widest font-bold">Event Date</h3><div id="race-list-for-day" class="space-y-4"></div></section>
 
+    <!-- ===== LAB MODAL ===== -->
+    <div id="lab-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden z-[60] flex flex-col text-left">
+        <!-- Header -->
+        <div class="bg-slate-900 text-white px-6 py-3 pb-1 rounded-none shrink-0">
+            <div class="flex justify-between items-center mb-1.5">
+                <h2 class="text-2xl font-black italic text-yellow-400">LAB</h2>
+                <button onclick="closeLabModal()" class="text-slate-400 text-2xl">×</button>
+            </div>
+            <!-- Main Tabs -->
+            <div class="flex gap-6 text-[15px] font-black text-slate-400 overflow-x-auto no-scrollbar whitespace-nowrap pb-2">
+                <button onclick="changeLabTab('pace')" id="lab-tab-pace" class="tab-active">페이스 계산</button>
+                <button onclick="changeLabTab('predict')" id="lab-tab-predict">기록 예측</button>
+                <button onclick="changeLabTab('weight')" id="lab-tab-weight">체중별 기록</button>
+                <button onclick="changeLabTab('glossary')" id="lab-tab-glossary">용어집</button>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="flex-1 overflow-auto bg-slate-50">
+
+            <!-- ===== TAB 1: 페이스 계산기 ===== -->
+            <div id="lab-content-pace" class="p-5 space-y-4">
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">거리 / 시간 / 페이스를 자유롭게 변환합니다</p>
+
+                <!-- Sub mode toggle -->
+                <div class="bg-slate-200 rounded-xl p-1 flex gap-1">
+                    <button onclick="changePaceMode('pace')" id="pace-mode-pace" class="lab-sub-active flex-1 text-[11px] font-black py-2 rounded-lg transition-all">페이스 계산</button>
+                    <button onclick="changePaceMode('time')" id="pace-mode-time" class="text-slate-500 flex-1 text-[11px] font-black py-2 rounded-lg transition-all">시간 계산</button>
+                    <button onclick="changePaceMode('dist')" id="pace-mode-dist" class="text-slate-500 flex-1 text-[11px] font-black py-2 rounded-lg transition-all">거리 계산</button>
+                </div>
+
+                <!-- 페이스 계산: 거리 + 시간 → 페이스 -->
+                <div id="pace-form-pace" class="space-y-3">
+                    <label class="text-[11px] font-black text-slate-500 uppercase tracking-wider block">거리 (km)</label>
+                    <div class="flex gap-2">
+                        <button onclick="setDist('pace-dist1',5)" data-km="5" class="dist-btn">5K</button>
+                        <button onclick="setDist('pace-dist1',10)" data-km="10" class="dist-btn">10K</button>
+                        <button onclick="setDist('pace-dist1',21.0975)" data-km="21.0975" class="dist-btn">하프</button>
+                        <button onclick="setDist('pace-dist1',42.195)" data-km="42.195" class="dist-btn">풀</button>
+                    </div>
+                    <div class="relative">
+                        <input type="number" id="pace-dist1" placeholder="예) 42.195" class="lab-input record-font" inputmode="decimal">
+                        <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-black">km</span>
+                    </div>
+                    <label class="text-[11px] font-black text-slate-500 uppercase tracking-wider block">완주 시간</label>
+                    <div class="time-input-row">
+                        <input type="text" id="pace-h1" placeholder="시" class="lab-input record-font" inputmode="numeric" maxlength="2" oninput="this.value=this.value.replace(/\D/g,'')">
+                        <span class="time-sep">:</span>
+                        <input type="text" id="pace-m1" placeholder="분" class="lab-input record-font" inputmode="numeric" maxlength="2" oninput="this.value=this.value.replace(/\D/g,'')">
+                        <span class="time-sep">:</span>
+                        <input type="text" id="pace-s1" placeholder="초" class="lab-input record-font" inputmode="numeric" maxlength="2" oninput="this.value=this.value.replace(/\D/g,'')">
+                    </div>
+                    <button onclick="calcPace()" class="lab-calc-btn mt-2">페이스 계산하기</button>
+                    <div id="pace-result-pace" class="hidden lab-result-box">
+                        <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-2">평균 페이스</p>
+                        <p id="pace-result-pace-val" class="text-4xl font-black record-font text-yellow-400"></p>
+                        <p class="text-slate-400 text-[11px] font-black mt-1">min/km</p>
+                        <div id="pace-splits" class="mt-4 pt-4 border-t border-slate-700 grid grid-cols-2 gap-3 text-left"></div>
+                    </div>
+                </div>
+
+                <!-- 시간 계산: 거리 + 페이스 → 시간 -->
+                <div id="pace-form-time" class="space-y-3 hidden">
+                    <label class="text-[11px] font-black text-slate-500 uppercase tracking-wider block">거리 (km)</label>
+                    <div class="flex gap-2">
+                        <button onclick="setDist('pace-dist2',5)" data-km="5" class="dist-btn">5K</button>
+                        <button onclick="setDist('pace-dist2',10)" data-km="10" class="dist-btn">10K</button>
+                        <button onclick="setDist('pace-dist2',21.0975)" data-km="21.0975" class="dist-btn">하프</button>
+                        <button onclick="setDist('pace-dist2',42.195)" data-km="42.195" class="dist-btn">풀</button>
+                    </div>
+                    <div class="relative">
+                        <input type="number" id="pace-dist2" placeholder="예) 21.0975" class="lab-input record-font" inputmode="decimal">
+                        <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-black">km</span>
+                    </div>
+                    <label class="text-[11px] font-black text-slate-500 uppercase tracking-wider block">목표 페이스 (분:초 / km)</label>
+                    <div class="time-input-row">
+                        <input type="text" id="pace-pm2" placeholder="분" class="lab-input record-font" inputmode="numeric" maxlength="2" oninput="this.value=this.value.replace(/\D/g,'')">
+                        <span class="time-sep">:</span>
+                        <input type="text" id="pace-ps2" placeholder="초" class="lab-input record-font" inputmode="numeric" maxlength="2" oninput="this.value=this.value.replace(/\D/g,'')">
+                    </div>
+                    <button onclick="calcTime()" class="lab-calc-btn mt-2">완주 시간 계산하기</button>
+                    <div id="pace-result-time" class="hidden lab-result-box">
+                        <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-2">예상 완주 시간</p>
+                        <p id="pace-result-time-val" class="text-4xl font-black record-font text-yellow-400"></p>
+                        <div id="pace-time-splits" class="mt-4 pt-4 border-t border-slate-700 grid grid-cols-2 gap-3 text-left"></div>
+                    </div>
+                </div>
+
+                <!-- 거리 계산: 시간 + 페이스 → 거리 -->
+                <div id="pace-form-dist" class="space-y-3 hidden">
+                    <label class="text-[11px] font-black text-slate-500 uppercase tracking-wider block">달린 시간</label>
+                    <div class="time-input-row">
+                        <input type="text" id="pace-h3" placeholder="시" class="lab-input record-font" inputmode="numeric" maxlength="2" oninput="this.value=this.value.replace(/\D/g,'')">
+                        <span class="time-sep">:</span>
+                        <input type="text" id="pace-m3" placeholder="분" class="lab-input record-font" inputmode="numeric" maxlength="2" oninput="this.value=this.value.replace(/\D/g,'')">
+                        <span class="time-sep">:</span>
+                        <input type="text" id="pace-s3" placeholder="초" class="lab-input record-font" inputmode="numeric" maxlength="2" oninput="this.value=this.value.replace(/\D/g,'')">
+                    </div>
+                    <label class="text-[11px] font-black text-slate-500 uppercase tracking-wider block">페이스 (분:초 / km)</label>
+                    <div class="time-input-row">
+                        <input type="text" id="pace-pm3" placeholder="분" class="lab-input record-font" inputmode="numeric" maxlength="2" oninput="this.value=this.value.replace(/\D/g,'')">
+                        <span class="time-sep">:</span>
+                        <input type="text" id="pace-ps3" placeholder="초" class="lab-input record-font" inputmode="numeric" maxlength="2" oninput="this.value=this.value.replace(/\D/g,'')">
+                    </div>
+                    <button onclick="calcDist()" class="lab-calc-btn mt-2">거리 계산하기</button>
+                    <div id="pace-result-dist" class="hidden lab-result-box">
+                        <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-2">달린 거리</p>
+                        <p id="pace-result-dist-val" class="text-4xl font-black record-font text-yellow-400"></p>
+                        <p class="text-slate-400 text-[11px] font-black mt-1">km</p>
+                    </div>
+                </div>
+
+                <!-- 주요 대회 참고 페이스 -->
+                <div class="bg-white rounded-[1rem] p-4 border border-slate-100">
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">주요 대회 목표 페이스 참고</p>
+                    <div class="space-y-2" id="ref-pace-table"></div>
+                </div>
+            </div>
+
+            <!-- ===== TAB 2: 기록 예측기 ===== -->
+            <div id="lab-content-predict" class="p-5 space-y-4 hidden">
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">현재 기록으로 다른 거리의 예상 기록을 계산합니다 (Riegel 공식)</p>
+
+                <div class="space-y-3">
+                    <label class="text-[11px] font-black text-slate-500 uppercase tracking-wider block">기록한 거리</label>
+                    <select id="pred-from-dist" class="lab-select">
+                        <option value="">거리 선택</option>
+                        <option value="5">5K</option>
+                        <option value="10">10K</option>
+                        <option value="21.0975">하프마라톤</option>
+                        <option value="42.195">풀마라톤</option>
+                    </select>
+
+                    <label class="text-[11px] font-black text-slate-500 uppercase tracking-wider block">해당 거리 기록</label>
+                    <div class="time-input-row">
+                        <input type="text" id="pred-h" placeholder="시" class="lab-input record-font" inputmode="numeric" maxlength="2" oninput="this.value=this.value.replace(/\D/g,'')">
+                        <span class="time-sep">:</span>
+                        <input type="text" id="pred-m" placeholder="분" class="lab-input record-font" inputmode="numeric" maxlength="2" oninput="this.value=this.value.replace(/\D/g,'')">
+                        <span class="time-sep">:</span>
+                        <input type="text" id="pred-s" placeholder="초" class="lab-input record-font" inputmode="numeric" maxlength="2" oninput="this.value=this.value.replace(/\D/g,'')">
+                    </div>
+
+                    <button onclick="calcPredict()" class="lab-calc-btn">예상 기록 계산하기</button>
+                </div>
+
+                <div id="predict-result" class="hidden space-y-3">
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">예상 완주 기록</p>
+                    <div class="grid grid-cols-2 gap-3" id="predict-cards"></div>
+                    <div class="bg-slate-100 rounded-xl p-4 text-[10px] text-slate-400 font-bold">
+                        💡 Riegel 공식: T2 = T1 × (D2 ÷ D1)^1.06 — 완벽한 컨디션 기준이며, 실제 기록은 훈련 수준과 날씨에 따라 달라질 수 있습니다.
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== TAB 3: 체중 변화 ===== -->
+            <div id="lab-content-weight" class="p-5 space-y-4 hidden">
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">체중 변화에 따른 기록 변화를 예측합니다</p>
+
+                <div class="space-y-3">
+                    <label class="text-[11px] font-black text-slate-500 uppercase tracking-wider block">현재 체중 (kg)</label>
+                    <div class="relative">
+                        <input type="number" id="wt-weight" placeholder="예) 70" class="lab-input record-font" inputmode="decimal">
+                        <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-black">kg</span>
+                    </div>
+
+                    <label class="text-[11px] font-black text-slate-500 uppercase tracking-wider block">대상 거리</label>
+                    <select id="wt-dist" class="lab-select">
+                        <option value="">거리 선택</option>
+                        <option value="5">5K</option>
+                        <option value="10">10K</option>
+                        <option value="21.0975">하프마라톤</option>
+                        <option value="42.195">풀마라톤</option>
+                    </select>
+
+                    <label class="text-[11px] font-black text-slate-500 uppercase tracking-wider block">현재 기록</label>
+                    <div class="time-input-row">
+                        <input type="text" id="wt-h" placeholder="시" class="lab-input record-font" inputmode="numeric" maxlength="2" oninput="this.value=this.value.replace(/\D/g,'')">
+                        <span class="time-sep">:</span>
+                        <input type="text" id="wt-m" placeholder="분" class="lab-input record-font" inputmode="numeric" maxlength="2" oninput="this.value=this.value.replace(/\D/g,'')">
+                        <span class="time-sep">:</span>
+                        <input type="text" id="wt-s" placeholder="초" class="lab-input record-font" inputmode="numeric" maxlength="2" oninput="this.value=this.value.replace(/\D/g,'')">
+                    </div>
+
+                    <button onclick="calcWeight()" class="lab-calc-btn">체중별 기록 예측하기</button>
+                </div>
+
+                <div id="weight-result" class="hidden">
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">체중별 예상 기록 (1kg당 약 2초/km 변화)</p>
+                    <div class="bg-white rounded-[1rem] overflow-hidden border border-slate-100">
+                        <table class="weight-table w-full">
+                            <thead>
+                                <tr>
+                                    <th>체중 (kg)</th>
+                                    <th>예상 기록</th>
+                                    <th>차이</th>
+                                </tr>
+                            </thead>
+                            <tbody id="weight-table-body"></tbody>
+                        </table>
+                    </div>
+                    <div class="bg-slate-100 rounded-xl p-4 text-[10px] text-slate-400 font-bold mt-3">
+                        💡 체중 1kg 감소 시 약 2초/km 향상 기준입니다. 개인 체형과 훈련 수준에 따라 실제 효과는 다를 수 있습니다.
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== TAB 4: 용어집 ===== -->
+            <div id="lab-content-glossary" class="p-5 space-y-3 hidden">
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">마라톤 & 러닝 필수 용어 모음</p>
+                <input type="text" id="glossary-search" oninput="filterGlossary()" placeholder="🔍 용어 검색..." class="lab-input mb-1">
+                <div id="glossary-categories" class="space-y-3"></div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Record Modal -->
     <div id="record-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden z-[60] flex flex-col text-left">
         <div class="bg-slate-900 text-white px-6 py-3 pb-1 rounded-none">
             <div class="flex justify-between items-center mb-1.5">
@@ -110,21 +394,48 @@
     <div id="join-modal" class="fixed inset-0 bg-black/70 backdrop-blur-md hidden z-50 flex items-center justify-center p-6 text-left font-bold"><div class="bg-white w-full max-w-sm rounded-[1rem] p-8 shadow-2xl border-white/20"><h2 id="join-race-title" class="text-xl font-black mb-1 text-slate-800">Runner Info</h2><p id="join-race-date" class="text-xs text-slate-400 mb-6 font-black"></p><input type="text" id="user-name" placeholder="이름" class="w-full bg-slate-50 border-none p-4 rounded-lg mb-4 outline-none text-[16px] font-bold shadow-inner"><div class="flex gap-8 mb-6 font-black text-sm"><label><input type="radio" name="gender" value="남" checked class="accent-slate-900"> 남성</label><label><input type="radio" name="gender" value="여" class="accent-slate-900"> 여성</label></div><select id="user-course" class="w-full bg-slate-50 border-none p-4 rounded-lg mb-8 outline-none text-slate-500 font-black shadow-inner text-[16px]"></select><div class="flex gap-3 font-black"><button onclick="closeJoinModal()" class="flex-1 py-4 font-black text-slate-400 text-sm uppercase">Cancel</button><button onclick="addParticipant()" class="flex-1 bg-yellow-400 text-slate-900 rounded-xl shadow-lg text-sm uppercase">Register</button></div></div></div>
 
     <script>
+        // ==================== ORIGINAL CODE ====================
         const DB_URL = "https://runcal-80d30-default-rtdb.firebaseio.com"; 
         const MASTER_PW = "1987";
         const ADMIN_PW = "0248";
-        const _v = (s) => s.split('').reduce((a,b) => (((a << 5) - a) + b.charCodeAt(0))|0, 0).toString();
-        const _k1 = "1509371"; 
 
         let allData = { races: {}, participants: {}, records: {} };
-        let currentYear = 2026;
+        let currentYear = new Date().getFullYear();
         let currentMonth = new Date().getMonth() + 1;
         let selectedDate = null;
         let currentRecordTab = 'pb';
         let sortKey = 'full';
         let sortDir = 1;
 
-        window.onload = () => { initMonthSelect(); fetchData(); };
+        window.onload = () => { initMonthSelect(); fetchData(); renderRefPaceTable(); };
+
+        // ---- 기록 입력 자동 포맷 (MM:SS / H:MM:SS) ----
+        function formatRecord(el, type) {
+            const prevLen = el.value.length;
+            let digits = el.value.replace(/\D/g, '');
+            let formatted = '';
+
+            if (type === 'short') {
+                // MM:SS — max 4 digits
+                digits = digits.slice(0, 4);
+                if (digits.length > 2) {
+                    formatted = digits.slice(0, 2) + ':' + digits.slice(2);
+                } else {
+                    formatted = digits;
+                }
+            } else {
+                // H:MM:SS — max 5 digits (시 1자리, 분 2자리, 초 2자리)
+                digits = digits.slice(0, 5);
+                if (digits.length > 3) {
+                    formatted = digits.slice(0, 1) + ':' + digits.slice(1, 3) + ':' + digits.slice(3, 5);
+                } else if (digits.length > 1) {
+                    formatted = digits.slice(0, 1) + ':' + digits.slice(1);
+                } else {
+                    formatted = digits;
+                }
+            }
+            el.value = formatted;
+        }
 
         function isSameDate(dateA, dateB) { if (!dateA || !dateB) return false; const norm = (d) => d.split('-').map(v => parseInt(v)).join('-'); return norm(dateA) === norm(dateB); }
 
@@ -309,7 +620,394 @@
         async function addParticipant() { const n = document.getElementById('user-name').value; const c = document.getElementById('user-course').value; if(!n || !c) return; await fetch(`${DB_URL}/participants.json`, { method: 'POST', body: JSON.stringify({ raceId: activeRaceId, name: n, gender: document.querySelector('input[name="gender"]:checked').value, course: c }) }); closeJoinModal(); fetchData(); }
         async function deleteParticipant(pid) { const pwInput = prompt("삭제 암호"); if(pwInput !== MASTER_PW) return; await fetch(`${DB_URL}/participants/${pid}.json`, { method: 'DELETE' }); fetchData(); }
         async function importData() { const raw = document.getElementById('bulk-json-input').value; if(!raw) return; try { const d = JSON.parse(raw); if(confirm("업로드?")) { await fetch(`${DB_URL}/.json`, { method: 'PUT', body: JSON.stringify(d) }); location.reload(); } } catch(e) { alert("오류"); } }
-        function exportData() { let csv = "\ufeff구분,이름,날짜/코스,URL\n"; Object.values(allData.races || {}).forEach(r => csv += `대회,${r.name},${r.date},${r.url}\n`); const b = new Blob([csv], { type: 'text/csv' }); const l = document.createElement("a"); l.href = URL.createObjectURL(blob); l.download = "daltokki.csv"; l.click(); }
+        function exportData() { 
+            let csv = "\ufeff구분,이름,날짜/코스,URL\n"; 
+            Object.values(allData.races || {}).forEach(r => csv += `대회,${r.name},${r.date},${r.url}\n`); 
+            const blob = new Blob([csv], { type: 'text/csv' }); 
+            const l = document.createElement("a"); 
+            l.href = URL.createObjectURL(blob); 
+            l.download = "daltokki.csv"; 
+            l.click(); 
+        }
+
+        // ==================== LAB: 연구실 ====================
+
+        let currentLabTab = 'pace';
+        let currentPaceMode = 'pace';
+
+        function openLabModal() {
+            document.getElementById('lab-modal').classList.remove('hidden');
+            changeLabTab('pace');
+        }
+        function closeLabModal() {
+            document.getElementById('lab-modal').classList.add('hidden');
+        }
+
+        function changeLabTab(tab) {
+            currentLabTab = tab;
+            ['pace', 'predict', 'weight'].forEach(t => {
+                document.getElementById(`lab-tab-${t}`).classList.remove('lab-tab-active');
+                document.getElementById(`lab-tab-${t}`).classList.add('text-slate-400');
+                document.getElementById(`lab-content-${t}`).classList.add('hidden');
+            });
+            document.getElementById(`lab-tab-${tab}`).classList.add('lab-tab-active');
+            document.getElementById(`lab-tab-${tab}`).classList.remove('text-slate-400');
+            document.getElementById(`lab-content-${tab}`).classList.remove('hidden');
+        }
+
+        // ---- 거리 빠른 선택 ----
+        function setDist(inputId, km) {
+            document.getElementById(inputId).value = km;
+            // active 표시: 같은 부모 안의 .dist-btn 들
+            const input = document.getElementById(inputId);
+            const btnRow = input.closest('.space-y-3').querySelector('.flex.gap-2');
+            if (btnRow) {
+                btnRow.querySelectorAll('.dist-btn').forEach(btn => {
+                    btn.classList.toggle('active', parseFloat(btn.getAttribute('data-km')) === km);
+                });
+            }
+        }
+
+        // ---- PACE MODE TOGGLE ----
+        function changePaceMode(mode) {
+            currentPaceMode = mode;
+            ['pace','time','dist'].forEach(m => {
+                document.getElementById(`pace-mode-${m}`).classList.remove('lab-sub-active');
+                document.getElementById(`pace-mode-${m}`).classList.add('text-slate-500');
+                document.getElementById(`pace-form-${m}`).classList.add('hidden');
+            });
+            document.getElementById(`pace-mode-${mode}`).classList.add('lab-sub-active');
+            document.getElementById(`pace-mode-${mode}`).classList.remove('text-slate-500');
+            document.getElementById(`pace-form-${mode}`).classList.remove('hidden');
+        }
+
+        // ---- HELPER: seconds → "H:MM:SS" or "MM:SS" ----
+        function secsToHMS(s) {
+            const total = Math.round(s); // 전체 반올림 후 분해 → 60초 표기 방지
+            const h = Math.floor(total / 3600);
+            const m = Math.floor((total % 3600) / 60);
+            const sec = total % 60;
+            if (h > 0) return `${h}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+            return `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+        }
+
+        function secsToMSFixed(s) {
+            const total = Math.round(s); // 전체 반올림 후 분해 → 60초 표기 방지
+            const m = Math.floor(total / 60);
+            const sec = total % 60;
+            return `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+        }
+
+        function getFormSeconds(hId, mId, sId) {
+            const h = parseInt(document.getElementById(hId).value) || 0;
+            const m = parseInt(document.getElementById(mId).value) || 0;
+            const s = parseInt(document.getElementById(sId).value) || 0;
+            return h * 3600 + m * 60 + s;
+        }
+
+        // ---- 1. 페이스 계산 ----
+        function calcPace() {
+            const dist = parseFloat(document.getElementById('pace-dist1').value);
+            const totalSecs = getFormSeconds('pace-h1','pace-m1','pace-s1');
+            if (!dist || dist <= 0 || totalSecs <= 0) return alert('거리와 시간을 모두 입력해주세요.');
+            const paceSecs = totalSecs / dist;
+            const resultEl = document.getElementById('pace-result-pace');
+            document.getElementById('pace-result-pace-val').innerText = secsToMSFixed(paceSecs);
+            // Splits
+            const splits = document.getElementById('pace-splits');
+            const splitDists = [
+                { label: '5K', km: 5 },
+                { label: '10K', km: 10 },
+                { label: 'Half', km: 21.0975 },
+                { label: 'Full', km: 42.195 },
+            ];
+            splits.innerHTML = splitDists.map(sd => {
+                const t = secsToHMS(paceSecs * sd.km);
+                const isDimmed = sd.km > dist * 1.05;
+                return `<div class="${isDimmed ? 'opacity-40' : ''}"><p class="text-[9px] text-slate-500 font-black uppercase">${sd.label}</p><p class="text-yellow-400 font-black record-font text-sm">${t}</p></div>`;
+            }).join('');
+            resultEl.classList.remove('hidden');
+        }
+
+        // ---- 2. 시간 계산 ----
+        function calcTime() {
+            const dist = parseFloat(document.getElementById('pace-dist2').value);
+            const pm = parseInt(document.getElementById('pace-pm2').value) || 0;
+            const ps = parseInt(document.getElementById('pace-ps2').value) || 0;
+            const paceSecs = pm * 60 + ps;
+            if (!dist || dist <= 0 || paceSecs <= 0) return alert('거리와 페이스를 모두 입력해주세요.');
+            const totalSecs = paceSecs * dist;
+            const resultEl = document.getElementById('pace-result-time');
+            document.getElementById('pace-result-time-val').innerText = secsToHMS(totalSecs);
+            // km splits
+            const splits = document.getElementById('pace-time-splits');
+            const splitKms = [5, 10, 15, 20, 25, 30, 35, 40, 42].filter(k => k <= dist);
+            splits.innerHTML = splitKms.map(k => {
+                return `<div><p class="text-[9px] text-slate-500 font-black uppercase">${k}km</p><p class="text-yellow-400 font-black record-font text-sm">${secsToHMS(paceSecs * k)}</p></div>`;
+            }).join('');
+            resultEl.classList.remove('hidden');
+        }
+
+        // ---- 3. 거리 계산 ----
+        function calcDist() {
+            const totalSecs = getFormSeconds('pace-h3','pace-m3','pace-s3');
+            const pm = parseInt(document.getElementById('pace-pm3').value) || 0;
+            const ps = parseInt(document.getElementById('pace-ps3').value) || 0;
+            const paceSecs = pm * 60 + ps;
+            if (totalSecs <= 0 || paceSecs <= 0) return alert('시간과 페이스를 모두 입력해주세요.');
+            const dist = totalSecs / paceSecs;
+            document.getElementById('pace-result-dist-val').innerText = dist.toFixed(3) + ' km';
+            document.getElementById('pace-result-dist').classList.remove('hidden');
+        }
+
+        // ---- 참고 페이스 테이블 ----
+        function renderRefPaceTable() {
+            const refs = [
+                { label: 'Sub 3:00 (풀)', dist: 42.195, secs: 3 * 3600 },
+                { label: 'Sub 3:30 (풀)', dist: 42.195, secs: 3.5 * 3600 },
+                { label: 'Sub 4:00 (풀)', dist: 42.195, secs: 4 * 3600 },
+                { label: 'Sub 2:00 (하프)', dist: 21.0975, secs: 2 * 3600 },
+                { label: 'Sub 1:30 (하프)', dist: 21.0975, secs: 1.5 * 3600 },
+                { label: 'Sub 50:00 (10K)', dist: 10, secs: 50 * 60 },
+            ];
+            const container = document.getElementById('ref-pace-table');
+            container.innerHTML = refs.map(r => {
+                const pace = secsToMSFixed(r.secs / r.dist);
+                return `<div class="flex justify-between items-center text-sm font-bold border-b border-slate-50 pb-2">
+                    <span class="text-slate-600">${r.label}</span>
+                    <span class="record-font text-yellow-500 font-black">${pace} /km</span>
+                </div>`;
+            }).join('');
+        }
+
+        // ==================== 기록 예측기 ====================
+        // Riegel formula: T2 = T1 * (D2/D1)^1.06
+        function calcPredict() {
+            const fromDist = parseFloat(document.getElementById('pred-from-dist').value);
+            const totalSecs = getFormSeconds('pred-h','pred-m','pred-s');
+            if (!fromDist || totalSecs <= 0) return alert('거리와 기록을 모두 입력해주세요.');
+
+            const targets = [
+                { label: '5K', km: 5, emoji: '🏃' },
+                { label: '10K', km: 10, emoji: '🔟' },
+                { label: 'Half', km: 21.0975, emoji: '🌗' },
+                { label: 'Full', km: 42.195, emoji: '🏅' },
+            ];
+
+            const cards = document.getElementById('predict-cards');
+            cards.innerHTML = '';
+
+            targets.forEach(t => {
+                if (Math.abs(t.km - fromDist) < 0.01) return; // skip same distance
+                const predictSecs = totalSecs * Math.pow(t.km / fromDist, 1.06);
+                const pace = secsToMSFixed(predictSecs / t.km);
+                const timeStr = secsToHMS(predictSecs);
+                cards.innerHTML += `
+                    <div class="bg-slate-900 rounded-2xl p-4 text-center">
+                        <p class="text-2xl mb-1">${t.emoji}</p>
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">${t.label}</p>
+                        <p class="text-yellow-400 font-black record-font text-xl mt-1">${timeStr}</p>
+                        <p class="text-slate-500 text-[10px] font-black mt-1 record-font">${pace}/km</p>
+                    </div>`;
+            });
+
+            document.getElementById('predict-result').classList.remove('hidden');
+        }
+
+        // ==================== 체중 변화 ====================
+        // 1kg 감소 → 2초/km 향상
+        function calcWeight() {
+            const weight = parseFloat(document.getElementById('wt-weight').value);
+            const dist = parseFloat(document.getElementById('wt-dist').value);
+            const totalSecs = getFormSeconds('wt-h','wt-m','wt-s');
+            if (!weight || !dist || totalSecs <= 0) return alert('체중, 거리, 기록을 모두 입력해주세요.');
+
+            const tbody = document.getElementById('weight-table-body');
+            tbody.innerHTML = '';
+
+            // show -10kg to +10kg in steps of 1
+            for (let delta = -10; delta <= 10; delta++) {
+                const newWeight = weight + delta;
+                if (newWeight <= 0) continue;
+                // 1kg 감소 → 2초/km 단축, 1kg 증가 → 2초/km 증가
+                const secsChange = delta * 2 * dist; // delta 양수(체중증가) → 시간 증가, delta 음수(체중감소) → 시간 감소
+                const newSecs = Math.max(totalSecs + secsChange, 0);
+                const diff = newSecs - totalSecs;
+                const diffStr = diff === 0 ? '–' : (diff < 0 ? `▼ ${secsToHMS(Math.abs(diff))}` : `▲ ${secsToHMS(diff)}`);
+                const isBase = delta === 0;
+                const diffClass = diff < 0 ? 'weight-better' : diff > 0 ? 'weight-worse' : '';
+
+                tbody.innerHTML += `
+                    <tr class="${isBase ? 'weight-highlight' : ''}">
+                        <td class="font-black ${isBase ? 'text-slate-900' : 'text-slate-600'}">${newWeight.toFixed(1)}kg${isBase ? ' 👤' : ''}</td>
+                        <td class="record-font font-bold ${isBase ? 'text-slate-900' : 'text-slate-600'}">${secsToHMS(newSecs)}</td>
+                        <td class="${diffClass} record-font">${diffStr}</td>
+                    </tr>`;
+            }
+
+            document.getElementById('weight-result').classList.remove('hidden');
+        }
+
+        // ==================== 용어집 ====================
+        const GLOSSARY_DATA = [
+            {
+                category: '🏁 레이스 기록',
+                terms: [
+                    { term: '건타임 (Gun Time)', desc: '출발 신호와 동시에 시작되는 공식 시계. 뒤쪽에서 출발할수록 대기 시간이 포함된다.' },
+                    { term: '넷타임 (Net Time / Chip Time)', desc: '내 칩이 출발선을 밟는 순간부터 측정되는 실제 달린 시간.' },
+                    { term: '페이스 (Pace)', desc: '1km를 달리는 데 걸리는 시간. 예) 5\'00"/km' },
+                    { term: '스플릿 (Split)', desc: '구간별 통과 기록. 예) 하프 스플릿, 5km 스플릿' },
+                    { term: '네거티브 스플릿', desc: '후반부를 전반부보다 빠르게 달리는 전략. 페이스 관리의 이상적인 형태로 꼽힌다.' },
+                    { term: '포지티브 스플릿', desc: '전반부가 후반부보다 빠른 것. 보통 초반 오버페이스의 결과다.' },
+                    { term: '이븐 스플릿', desc: '전후반을 동일한 페이스로 달리는 전략.' },
+                    { term: 'BQ (Boston Qualifier)', desc: '보스턴 마라톤 참가 자격 기록. 연령·성별별로 기준이 다르다.' },
+                    { term: 'PB / PR', desc: '개인 최고 기록. Personal Best / Personal Record' },
+                    { term: '서브3 (Sub-3)', desc: '풀마라톤 3시간 이내 완주. 아마추어 마라토너의 대표적인 드림 타깃.' },
+                    { term: '서브330', desc: '풀마라톤 3시간 30분 이내 완주.' },
+                    { term: '싱글 (Single)', desc: '풀마라톤 3시간 00~09분대 완주. 서브3 직전 단계.' },
+                    { term: 'DNF', desc: 'Did Not Finish — 중도 포기.' },
+                    { term: 'DNS', desc: 'Did Not Start — 출전 취소.' },
+                ]
+            },
+            {
+                category: '🏃 훈련 방법론',
+                terms: [
+                    { term: 'LSD (Long Slow Distance)', desc: '느린 속도로 장거리를 달리는 훈련. 유산소 기반과 지구력을 쌓는 핵심 훈련.' },
+                    { term: '지속주', desc: '일정 페이스를 유지하며 달리는 훈련. 보통 10~30km 분량.' },
+                    { term: '템포런 (Tempo Run)', desc: '젖산역치(LT) 근처 페이스로 20~40분 달리는 훈련. 불편하지만 대화가 가능한 강도.' },
+                    { term: '인터벌 (Interval)', desc: '고강도 달리기와 휴식을 반복하는 훈련. 예) 400m×10세트. VO2max 향상에 효과적.' },
+                    { term: '빌드업 (Build-up)', desc: '달릴수록 점점 페이스를 올리는 훈련. 마무리 구간이 가장 빠르다.' },
+                    { term: '파틀렉 (Fartlek)', desc: '스웨덴어로 "스피드 플레이". 자유롭게 빠르고 느린 구간을 섞어 달리는 훈련.' },
+                    { term: '힐 리피트 (Hill Repeat)', desc: '언덕을 반복 질주하는 훈련. 근력과 VO2max를 동시에 향상.' },
+                    { term: '스트라이드 (Strides)', desc: '80~95% 강도로 100m가량 짧게 가속하는 드릴. 주로 폼 교정과 신경계 활성화 목적.' },
+                    { term: '회복달리기 (Recovery Run)', desc: '매우 느린 속도의 가벼운 달리기. 피로 회복을 촉진하고 다리를 풀어준다.' },
+                    { term: '마라톤 페이스런 (MP Run)', desc: '목표 레이스 페이스로 달리는 훈련. 레이스 감각을 익히는 데 효과적.' },
+                    { term: '크로스 트레이닝', desc: '수영, 자전거 등 달리기 외 유산소 운동. 부상 방지와 심폐 능력 유지 목적.' },
+                ]
+            },
+            {
+                category: '👣 주법 & 폼',
+                terms: [
+                    { term: '힐풋 (Heel Strike)', desc: '발뒤꿈치부터 착지하는 주법. 가장 일반적인 착지 패턴이며, 2026년 세계기록(1:59:30)을 세운 Sawe 선수도 힐풋으로 달렸다. 착지 방식보다 자세 전체의 효율이 더 중요하다는 시각이 늘고 있다.' },
+                    { term: '미드풋 (Midfoot Strike)', desc: '발 중간부로 착지하는 주법. 충격이 비교적 고르게 분산된다.' },
+                    { term: '포어풋 (Forefoot Strike)', desc: '발 앞부분으로 착지하는 주법. 단거리와 일부 엘리트 러너에게서 많이 나타난다.' },
+                    { term: '피치주법 (High Cadence)', desc: '보폭을 줄이고 발 회전수를 높이는 주법. 보통 180spm을 기준으로 삼는다.' },
+                    { term: '스트라이드주법', desc: '보폭을 넓게 가져가는 주법.' },
+                    { term: '케이던스 (Cadence)', desc: '분당 발걸음 수 (Steps Per Minute). 엘리트 선수는 보통 180spm 이상.' },
+                    { term: '오버스트라이딩', desc: '보폭이 과도하게 넓어 무릎 앞에서 착지되는 폼. 브레이킹 효과가 생겨 효율을 떨어뜨린다.' },
+                    { term: '바운싱', desc: '달릴 때 몸이 위아래로 과도하게 튀는 것. 수직 에너지 낭비로 이어진다.' },
+                    { term: '드롭 (Drop)', desc: '신발 뒤꿈치와 앞꿈치의 높이 차이. 낮을수록 미드·포어풋 착지를 유도하는 경향이 있다.' },
+                ]
+            },
+            {
+                category: '💪 생리학 & 퍼포먼스',
+                terms: [
+                    { term: 'VO2max', desc: '최대산소섭취량. 유산소 능력의 핵심 지표로, 수치가 높을수록 고강도를 오래 유지할 수 있다.' },
+                    { term: '젖산역치 (Lactate Threshold, LT)', desc: '젖산이 급격히 쌓이기 시작하는 운동 강도. 이 근처가 템포런의 핵심 강도다.' },
+                    { term: '심박수 (HR)', desc: '분당 심장 박동수. 훈련 강도를 객관적으로 측정하는 기준.' },
+                    { term: '최대심박수 (HRmax)', desc: '일반적으로 220 - 나이로 추정하지만 개인차가 크다.' },
+                    { term: '심박존 (HR Zone)', desc: '최대심박수 대비 퍼센트로 나눈 훈련 강도 구간. Zone 1(가벼움)~Zone 5(최대) 로 구분.' },
+                    { term: '러너스 하이 (Runner\'s High)', desc: '달리기 중 분비되는 엔도르핀(엔도카나비노이드)으로 인한 황홀감.' },
+                    { term: '글리코겐', desc: '근육과 간에 저장되는 탄수화물 에너지원. 마라톤의 핵심 연료.' },
+                    { term: '카보로딩 (Carbo Loading)', desc: '레이스 전 탄수화물을 집중 섭취해 글리코겐 저장량을 극대화하는 전략.' },
+                    { term: 'EPOC', desc: '운동 후 산소부채. 고강도 훈련 후에도 칼로리가 계속 소모되는 현상.' },
+                ]
+            },
+            {
+                category: '🩹 부상 & 회복',
+                terms: [
+                    { term: 'IT밴드 증후군', desc: '장경인대 마찰로 무릎 외측에 통증이 오는 부상. 러너에게 매우 흔하다.' },
+                    { term: '족저근막염', desc: '발바닥 근막의 염증. 아침 첫 걸음에 통증이 심한 것이 특징.' },
+                    { term: '정강이 통증 (Shin Splints)', desc: '정강뼈 주변 근육 과부하로 발생하는 통증. 훈련량을 급격히 늘릴 때 잘 생긴다.' },
+                    { term: '블랙토 (Black Toenail)', desc: '발가락 반복 충격으로 발톱 아래 출혈이 생기는 것. 장거리 러너에게 흔하다.' },
+                    { term: '테이퍼링 (Tapering)', desc: '레이스 2~3주 전 훈련량을 줄여 몸의 컨디션을 끌어올리는 과정.' },
+                    { term: '오버트레이닝', desc: '회복 없이 과도한 훈련을 지속해 오히려 퍼포먼스가 저하되는 상태.' },
+                    { term: 'RICE', desc: 'Rest(휴식) · Ice(얼음) · Compression(압박) · Elevation(거상). 부상 초기 대처 원칙.' },
+                    { term: '폼롤러', desc: '근막 이완 도구. 훈련 후 회복과 근육통 완화에 널리 활용된다.' },
+                ]
+            },
+            {
+                category: '🎽 장비 & 대회',
+                terms: [
+                    { term: '레이싱 플레이트 (Carbon Plate)', desc: '탄소섬유 플레이트가 내장된 고성능 레이싱화. 에너지 반환율을 높여 기록 향상에 도움을 준다.' },
+                    { term: '에너지 젤 (Gel)', desc: '경기 중 섭취하는 농축 탄수화물 보충제. 글리코겐 고갈을 늦추는 역할.' },
+                    { term: '에이드 스테이션', desc: '대회 중 물·음료·젤을 나눠주는 보급소.' },
+                    { term: '페이서 (Pacer)', desc: '특정 완주 목표 시간을 유지해주는 안내 주자.' },
+                    { term: '웨이브 스타트', desc: '참가자를 여러 그룹으로 나눠 시차 출발하는 방식. 혼잡을 줄이기 위한 운영 방식.' },
+                    { term: 'BIB', desc: '레이스 번호표.' },
+                    { term: '스택 (Stack)', desc: '신발 밑창의 두께. 높을수록 쿠셔닝이 풍부하다.' },
+                    { term: '드롭백 (Drop Bag)', desc: '울트라 등 장거리 대회에서 특정 지점에 미리 맡겨두는 개인 보급 가방.' },
+                ]
+            },
+        ];
+
+        let glossaryOpen = {};
+
+        function renderGlossary(filter = '') {
+            const container = document.getElementById('glossary-categories');
+            container.innerHTML = '';
+            const q = filter.toLowerCase().trim();
+
+            GLOSSARY_DATA.forEach((cat, ci) => {
+                const filtered = q
+                    ? cat.terms.filter(t => t.term.toLowerCase().includes(q) || t.desc.toLowerCase().includes(q))
+                    : cat.terms;
+                if (filtered.length === 0) return;
+
+                const isOpen = q ? true : !!glossaryOpen[ci];
+                const itemsHtml = filtered.map(t => `
+                    <div class="py-3 border-b border-slate-100 last:border-0">
+                        <p class="text-sm font-black text-slate-800 mb-1">${highlight(t.term, q)}</p>
+                        <p class="text-[12px] font-bold text-slate-500 leading-relaxed">${highlight(t.desc, q)}</p>
+                    </div>`).join('');
+
+                container.innerHTML += `
+                    <div class="bg-white rounded-[1rem] overflow-hidden border border-slate-100 shadow-sm">
+                        <button onclick="toggleGlossaryCategory(${ci})" class="w-full flex justify-between items-center px-5 py-4 text-left">
+                            <span class="font-black text-slate-800 text-sm">${cat.category} <span class="text-slate-400 font-bold text-xs ml-1">${filtered.length}개</span></span>
+                            <span id="glossary-arrow-${ci}" class="text-slate-400 font-black text-lg transition-transform">${isOpen ? '▲' : '▼'}</span>
+                        </button>
+                        <div id="glossary-items-${ci}" class="${isOpen ? '' : 'hidden'} px-5 pb-2">
+                            ${itemsHtml}
+                        </div>
+                    </div>`;
+            });
+        }
+
+        function highlight(text, q) {
+            if (!q) return text;
+            const re = new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+            return text.replace(re, '<mark class="bg-yellow-200 text-slate-900 rounded px-0.5">$1</mark>');
+        }
+
+        function toggleGlossaryCategory(ci) {
+            glossaryOpen[ci] = !glossaryOpen[ci];
+            const items = document.getElementById(`glossary-items-${ci}`);
+            const arrow = document.getElementById(`glossary-arrow-${ci}`);
+            if (items) items.classList.toggle('hidden');
+            if (arrow) arrow.textContent = glossaryOpen[ci] ? '▲' : '▼';
+        }
+
+        function filterGlossary() {
+            const q = document.getElementById('glossary-search').value;
+            renderGlossary(q);
+        }
+
+        function changeLabTab(tab) {
+            const allTabs = ['pace', 'predict', 'weight', 'glossary'];
+            allTabs.forEach(t => {
+                const btn = document.getElementById(`lab-tab-${t}`);
+                const content = document.getElementById(`lab-content-${t}`);
+                if (btn) { btn.classList.remove('tab-active'); }
+                if (content) content.classList.add('hidden');
+            });
+            const activeBtn = document.getElementById(`lab-tab-${tab}`);
+            const activeContent = document.getElementById(`lab-content-${tab}`);
+            if (activeBtn) { activeBtn.classList.add('tab-active'); }
+            if (activeContent) activeContent.classList.remove('hidden');
+            if (tab === 'glossary') renderGlossary(document.getElementById('glossary-search')?.value || '');
+            currentLabTab = tab;
+        }
     </script>
 </body>
 </html>
