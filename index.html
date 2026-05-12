@@ -257,10 +257,28 @@
                     </div>
                 </div>
 
-                <!-- 주요 대회 참고 페이스 -->
-                <div class="bg-white rounded-[1rem] p-4 border border-slate-100">
-                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">주요 대회 목표 페이스 참고</p>
-                    <div class="space-y-2" id="ref-pace-table"></div>
+                <!-- 페이스별 기록 참고표 -->
+                <div class="bg-white rounded-[1rem] border border-slate-100 overflow-hidden">
+                    <div class="px-4 pt-4 pb-2">
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">페이스별 기록 참고표</p>
+                        <p class="text-[9px] text-slate-300 font-bold mt-0.5">2:50 ~ 6:30 · 5초 단위 · 400m는 초(sec) 단위</p>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table id="pace-ref-table" style="table-layout:auto !important;" class="w-full text-center border-collapse">
+                            <thead>
+                                <tr class="bg-slate-900 text-[10px] font-black text-slate-400">
+                                    <th class="py-2 px-2 whitespace-nowrap sticky left-0 bg-slate-900 text-yellow-400">페이스</th>
+                                    <th class="py-2 px-2 whitespace-nowrap">400m</th>
+                                    <th class="py-2 px-2 whitespace-nowrap">3K</th>
+                                    <th class="py-2 px-2 whitespace-nowrap">5K</th>
+                                    <th class="py-2 px-2 whitespace-nowrap">10K</th>
+                                    <th class="py-2 px-2 whitespace-nowrap">Half</th>
+                                    <th class="py-2 px-2 whitespace-nowrap">Full</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pace-ref-body" class="record-font text-[11px] font-bold text-slate-700"></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
@@ -407,7 +425,7 @@
         let sortKey = 'full';
         let sortDir = 1;
 
-        window.onload = () => { initMonthSelect(); fetchData(); renderRefPaceTable(); };
+        window.onload = () => { initMonthSelect(); fetchData(); renderPaceRefTable(); };
 
         // ---- 기록 입력 자동 포맷 (MM:SS / H:MM:SS) ----
         function formatRecord(el, type) {
@@ -638,6 +656,7 @@
         function openLabModal() {
             document.getElementById('lab-modal').classList.remove('hidden');
             changeLabTab('pace');
+            renderPaceRefTable();
         }
         function closeLabModal() {
             document.getElementById('lab-modal').classList.add('hidden');
@@ -760,24 +779,44 @@
             document.getElementById('pace-result-dist').classList.remove('hidden');
         }
 
-        // ---- 참고 페이스 테이블 ----
-        function renderRefPaceTable() {
-            const refs = [
-                { label: 'Sub 3:00 (풀)', dist: 42.195, secs: 3 * 3600 },
-                { label: 'Sub 3:30 (풀)', dist: 42.195, secs: 3.5 * 3600 },
-                { label: 'Sub 4:00 (풀)', dist: 42.195, secs: 4 * 3600 },
-                { label: 'Sub 2:00 (하프)', dist: 21.0975, secs: 2 * 3600 },
-                { label: 'Sub 1:30 (하프)', dist: 21.0975, secs: 1.5 * 3600 },
-                { label: 'Sub 50:00 (10K)', dist: 10, secs: 50 * 60 },
+        // ---- 페이스별 기록 참고표 ----
+        function renderPaceRefTable() {
+            const tbody = document.getElementById('pace-ref-body');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            const dists = [
+                { label: '400m', km: 0.4, isInterval: true },
+                { label: '3K',   km: 3 },
+                { label: '5K',   km: 5 },
+                { label: '10K',  km: 10 },
+                { label: 'Half', km: 21.0975 },
+                { label: 'Full', km: 42.195 },
             ];
-            const container = document.getElementById('ref-pace-table');
-            container.innerHTML = refs.map(r => {
-                const pace = secsToMSFixed(r.secs / r.dist);
-                return `<div class="flex justify-between items-center text-sm font-bold border-b border-slate-50 pb-2">
-                    <span class="text-slate-600">${r.label}</span>
-                    <span class="record-font text-yellow-500 font-black">${pace} /km</span>
-                </div>`;
-            }).join('');
+
+            // 2:50 ~ 6:30, 5초 단위
+            for (let totalSec = 170; totalSec <= 390; totalSec += 5) {
+                const pm = Math.floor(totalSec / 60);
+                const ps = totalSec % 60;
+                const paceLabel = `${pm}:${String(ps).padStart(2,'0')}`;
+
+                // 하이라이트 행: Sub3(3:34), Sub330(4:58), Sub4(5:41) 근접 페이스
+                const isHighlight = [214, 298, 341].includes(totalSec);
+
+                const cells = dists.map(d => {
+                    const secs = totalSec * d.km;
+                    if (d.isInterval) {
+                        return `<td class="py-2 px-2 whitespace-nowrap">${Math.round(secs)}초</td>`;
+                    }
+                    return `<td class="py-2 px-2 whitespace-nowrap">${secsToHMS(secs)}</td>`;
+                }).join('');
+
+                tbody.innerHTML += `
+                    <tr class="${isHighlight ? 'bg-yellow-50 font-black text-slate-900' : 'border-b border-slate-50'}">
+                        <td class="py-2 px-2 whitespace-nowrap sticky left-0 ${isHighlight ? 'bg-yellow-50 text-yellow-600 font-black' : 'bg-white text-slate-500'}">${paceLabel}</td>
+                        ${cells}
+                    </tr>`;
+            }
         }
 
         // ==================== 기록 예측기 ====================
