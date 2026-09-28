@@ -263,12 +263,19 @@
         .record-tabs button.tab-active{ color:var(--ink); border-bottom-color:var(--ink); }
         .stat-row{ display:flex; flex-wrap:wrap; gap:6px 16px; font-size:11px; font-weight:600; color:var(--ink-soft); border-top:1px solid var(--line); padding-top:11px; margin-top:8px; }
         .stat-row b{ color:var(--ink); font-weight:800; }
+        .record-card{ background:var(--surface); border-radius:var(--radius-md); overflow:hidden; box-shadow:var(--shadow-card); }
+        .record-scroll{ overflow-x:auto; }
         .rtable{ width:100%; border-collapse:collapse; text-align:left; }
-        .rtable thead th{ font-size:10px; font-weight:700; color:var(--ink-faint); border-bottom:1px solid var(--line); padding:12px 4px; }
+        .rtable thead th{ font-size:10px; font-weight:700; color:var(--ink-faint); background:var(--surface-tint); border-bottom:1px solid var(--line); padding:11px 4px; position:sticky; top:0; cursor:pointer; }
         .rtable thead th.center{ text-align:center; }
-        .rtable tbody td{ padding:14px 4px; border-bottom:1px solid var(--line); font-size:13px; font-weight:700; color:var(--ink); }
+        .rtable thead th:first-child, .rtable tbody td:first-child{ padding-left:16px; }
+        .rtable thead th:last-child, .rtable tbody td:last-child{ padding-right:16px; }
+        .rtable tbody td{ padding:13px 4px; border-bottom:1px solid var(--line); font-size:13px; font-weight:700; color:var(--ink); }
+        .rtable tbody tr:last-child td{ border-bottom:none; }
         .rtable tbody td.center{ text-align:center; color:var(--ink-soft); font-weight:600; }
-        .rank-medal{ font-size:9px; font-weight:800; color:#fff; background:var(--ink-sheen), var(--ink); border-radius:var(--pill); padding:3px 7px; margin-right:4px; }
+        .rank-badge{ display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; border-radius:50%; font-size:10px; font-weight:800; margin-right:7px; flex-shrink:0; }
+        .rank-badge.top3{ background:var(--ink-sheen), var(--ink); color:#fff; }
+        .rank-badge.plain{ background:var(--surface-tint); color:var(--ink-faint); }
         .sort-active{ background:var(--ink-sheen), var(--ink); color:#fff !important; border-radius:var(--pill); padding:3px 9px; white-space:nowrap; }
         .min-px{ padding-left:2px !important; padding-right:2px !important; }
 
@@ -277,9 +284,9 @@
         .pace-ref-card .pace-ref-head{ padding:16px 16px 10px; }
         .pace-ref-scroll{ overflow-x:auto; }
         .pace-ref-table{ width:100%; border-collapse:collapse; text-align:center; }
-        .pace-ref-table th{ font-size:10px; font-weight:700; color:var(--ink-faint); background:var(--surface-tint); padding:8px 10px; white-space:nowrap; position:sticky; top:0; }
+        .pace-ref-table th{ font-size:10px; font-weight:700; color:var(--ink-faint); background:var(--surface-tint); padding:8px 5px; white-space:nowrap; position:sticky; top:0; }
         .pace-ref-table th:first-child, .pace-ref-table td:first-child{ position:sticky; left:0; background:var(--surface-tint); color:var(--ink); font-weight:800; }
-        .pace-ref-table td{ font-size:11px; font-weight:700; color:var(--ink-soft); padding:7px 10px; white-space:nowrap; border-bottom:1px solid var(--line); }
+        .pace-ref-table td{ font-size:11px; font-weight:700; color:var(--ink-soft); padding:7px 5px; white-space:nowrap; border-bottom:1px solid var(--line); }
         .pace-ref-table tr.is-highlight td{ background:var(--chip-bg); color:var(--ink); font-weight:800; }
         .pace-ref-table tr.is-highlight td:first-child{ background:var(--ink); color:#fff; }
     </style>
@@ -449,7 +456,7 @@
                 <div class="pace-ref-card">
                     <div class="pace-ref-head">
                         <p class="eyebrow" style="margin-bottom:3px;">페이스별 기록 참고표</p>
-                        <p class="faint" style="font-size:10px;font-weight:600;">2:50 ~ 6:30 · 5초 단위 · 400m는 초(sec) 단위 · 속도는 km/h</p>
+                        <p class="faint" style="font-size:10px;font-weight:600;">2:50 ~ 7:30 · 5초 단위 · 400m는 초(sec) 단위 · 속도는 km/h</p>
                     </div>
                     <div class="pace-ref-scroll">
                         <table class="pace-ref-table" id="pace-ref-table">
@@ -561,23 +568,25 @@
                 <button onclick="openAddRecordModal()" class="pill-btn shrink-0" style="margin-top:14px;">기록 추가</button>
             </div>
         </div>
-        <div class="sheet-body" style="background:var(--surface);padding:8px;">
-            <div style="padding:8px;">
+        <div class="sheet-body">
+            <div class="card" style="margin:16px 16px 0;padding:16px 18px;">
                 <span id="record-count-label" class="eyebrow" style="display:block;">Total Runners: 0</span>
                 <div id="marathon-stats" class="stat-row"></div>
             </div>
-            <div style="overflow-x:auto;">
-            <table class="rtable">
-                <thead><tr>
-                    <th style="width:95px;" onclick="sortRecords('name')"><span id="sort-name">Rank Name ↕</span></th>
-                    <th class="center" style="width:55px;" onclick="sortRecords('5k')"><span id="sort-5k">5K ↕</span></th>
-                    <th class="center" style="width:55px;" onclick="sortRecords('10k')"><span id="sort-10k">10K ↕</span></th>
-                    <th class="center" style="width:65px;" onclick="sortRecords('half')"><span id="sort-half">Half ↕</span></th>
-                    <th class="center" style="width:65px;" onclick="sortRecords('full')"><span id="sort-full" class="sort-active">Full ↕</span></th>
-                    <th class="center min-px" style="width:60px;" id="th-action"></th>
-                </tr></thead>
-                <tbody id="record-body" class="record-font"></tbody>
-            </table>
+            <div class="record-card" style="margin:14px 16px 0;">
+                <div class="record-scroll">
+                <table class="rtable">
+                    <thead><tr>
+                        <th class="center" style="width:95px;" onclick="sortRecords('name')"><span id="sort-name">Name</span></th>
+                        <th class="center" style="width:55px;" onclick="sortRecords('5k')"><span id="sort-5k">5K</span></th>
+                        <th class="center" style="width:55px;" onclick="sortRecords('10k')"><span id="sort-10k">10K</span></th>
+                        <th class="center" style="width:65px;" onclick="sortRecords('half')"><span id="sort-half">Half</span></th>
+                        <th class="center" style="width:65px;" onclick="sortRecords('full')"><span id="sort-full" class="sort-active">Full</span></th>
+                        <th class="center min-px" style="width:60px;" id="th-action"></th>
+                    </tr></thead>
+                    <tbody id="record-body" class="record-font"></tbody>
+                </table>
+                </div>
             </div>
         </div>
     </section>
@@ -937,10 +946,10 @@
             dataToShow.sort((a, b) => { let valA = a[sortKey] || "-"; let valB = b[sortKey] || "-"; if (sortKey === 'name') return valA.localeCompare(valB, 'ko') * sortDir; return (timeToSeconds(valA) - timeToSeconds(valB)) * sortDir; });
             dataToShow.forEach((r, idx) => {
                 let rankNum = idx + 1;
-                const medals = ['1ST', '2ND', '3RD'];
-                let rankLabel = (sortDir === 1 && rankNum <= 3) ? `<span class="rank-medal">${medals[rankNum - 1]}</span>` : `<span class="faint record-font" style="font-size:12px;font-weight:500;width:26px;display:inline-block;">${rankNum}</span>`;
+                const isTop3 = (sortDir === 1 && rankNum <= 3);
+                let rankLabel = `<span class="rank-badge ${isTop3 ? 'top3' : 'plain'}">${rankNum}</span>`;
                 const actionBtns = isSub3View ? '' : `<td class="center min-px"><div class="flex gap-2 justify-center"><button onclick="editAnyPBRecord('${r.name}')" class="btn-link-text">Edit</button><button onclick="deleteAnyPBRecord('${r.name}')" class="btn-danger-text">Del</button></div></td>`;
-                body.innerHTML += `<tr><td class="min-px truncate">${rankLabel}${r.name}</td><td class="center" style="font-size:12px;">${r["5k"]}</td><td class="center" style="font-size:12px;">${r["10k"]}</td><td class="center" style="font-size:12px;">${r["half"]}</td><td class="center" style="font-size:13px;">${r["full"]}</td>${actionBtns}</tr>`;
+                body.innerHTML += `<tr><td class="truncate">${rankLabel}${r.name}</td><td class="center" style="font-size:12px;">${r["5k"]}</td><td class="center" style="font-size:12px;">${r["10k"]}</td><td class="center" style="font-size:12px;">${r["half"]}</td><td class="center" style="font-size:13px;">${r["full"]}</td>${actionBtns}</tr>`;
             });
         }
 
