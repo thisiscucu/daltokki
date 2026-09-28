@@ -76,7 +76,7 @@
         .app-scroll{ flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding-bottom:24px; }
 
         /* ---------- bottom nav ---------- */
-        .bottom-nav{ flex-shrink:0; position:relative; display:flex; background:rgba(255,255,255,.78); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border-top:1px solid var(--line); padding:6px 5px calc(5px + env(safe-area-inset-bottom)); border-radius:24px 24px 0 0; }
+        .bottom-nav{ flex-shrink:0; position:relative; display:flex; background:rgba(255,255,255,.78); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border-top:1px solid var(--line); padding:6px 5px calc(17px + env(safe-area-inset-bottom)); border-radius:24px 24px 0 0; }
         .nav-item{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; padding:5px 2px; color:var(--ink-faint); font-size:12px; font-weight:700; transition:color .15s; }
         .nav-item.active{ color:var(--ink); }
         .nav-icon{ width:26px; height:26px; display:flex; align-items:center; justify-content:center; }
@@ -1237,8 +1237,8 @@
                 { label: 'Full', km: 42.195 },
             ];
 
-            // 2:50 ~ 6:30, 5초 단위
-            for (let totalSec = 170; totalSec <= 390; totalSec += 5) {
+            // 2:50 ~ 7:30, 5초 단위
+            for (let totalSec = 170; totalSec <= 450; totalSec += 5) {
                 const pm = Math.floor(totalSec / 60);
                 const ps = totalSec % 60;
                 const paceLabel = `${pm}:${String(ps).padStart(2,'0')}`;
