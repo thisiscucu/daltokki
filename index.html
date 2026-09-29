@@ -261,8 +261,12 @@
         .record-tabs{ display:flex; gap:22px; overflow-x:auto; white-space:nowrap; font-size:13px; font-weight:800; color:var(--ink-faint); }
         .record-tabs button{ padding-bottom:8px; border-bottom:2.5px solid transparent; }
         .record-tabs button.tab-active{ color:var(--ink); border-bottom-color:var(--ink); }
-        .stat-row{ display:flex; flex-wrap:wrap; gap:6px 16px; font-size:11px; font-weight:600; color:var(--ink-soft); border-top:1px solid var(--line); padding-top:11px; margin-top:8px; }
-        .stat-row b{ color:var(--ink); font-weight:800; }
+        .stat-row{ display:grid; grid-template-columns:repeat(4, 1fr); gap:10px 6px; border-top:1px solid var(--line); padding-top:14px; margin-top:8px; }
+        .stat-item{ min-width:0; }
+        .stat-label{ font-size:12px; font-weight:600; color:var(--ink-faint); margin:0 0 5px; white-space:nowrap; }
+        .stat-value{ margin:0; white-space:nowrap; }
+        .stat-num{ font-size:21px; font-weight:800; color:var(--ink); }
+        .stat-pct{ font-size:12px; font-weight:700; color:var(--ink); }
         .record-card{ background:var(--surface); border-radius:var(--radius-md); overflow:hidden; box-shadow:var(--shadow-card); }
         .record-scroll{ overflow-x:auto; }
         .rtable{ width:100%; border-collapse:collapse; text-align:left; }
@@ -270,9 +274,11 @@
         .rtable thead th.center{ text-align:center; }
         .rtable thead th:first-child, .rtable tbody td:first-child{ padding-left:16px; }
         .rtable thead th:last-child, .rtable tbody td:last-child{ padding-right:16px; }
-        .rtable tbody td{ padding:13px 4px; border-bottom:1px solid var(--line); font-size:13px; font-weight:700; color:var(--ink); }
+        .rtable tbody td{ padding:13px 5px; border-bottom:1px solid var(--line); font-size:13px; font-weight:700; color:var(--ink); }
         .rtable tbody tr:last-child td{ border-bottom:none; }
         .rtable tbody td.center{ text-align:center; color:var(--ink-soft); font-weight:600; }
+        .rtable tbody td.center.is-sorted{ color:var(--ink); font-weight:800; }
+        .record-action-gap{ gap:3px; }
         .rank-badge{ display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; border-radius:50%; font-size:10px; font-weight:800; margin-right:7px; flex-shrink:0; }
         .rank-badge.top3{ background:var(--ink-sheen), var(--ink); color:#fff; }
         .rank-badge.plain{ background:var(--surface-tint); color:var(--ink-faint); }
@@ -654,7 +660,7 @@
                     <h4 class="doc-h4">👑 1987달토끼 운영진 소개</h4>
                     <div class="doc-staff-row"><span class="doc-staff-role">리더</span><span class="doc-staff-names">배윤정</span></div>
                     <div class="doc-staff-row"><span class="doc-staff-role">부리더</span><span class="doc-staff-names">천재민</span></div>
-                    <div class="doc-staff-row"><span class="doc-staff-role">운영진</span><span class="doc-staff-names">이우림, 홍미지, 김대협, 이정관, 최주희</span></div>
+                    <div class="doc-staff-row"><span class="doc-staff-role">운영진</span><span class="doc-staff-names">이우림, 홍미지, 김대협, <span onclick="checkAdminPassword()">이정관</span>, 최주희</span></div>
                 </div>
             </div>
             <div id="more-content-newsletter" class="news-empty hidden">
@@ -747,6 +753,7 @@
     <div id="admin-modal" class="dialog-overlay hidden" style="z-index:50;">
         <div class="dialog-card" style="max-width:440px;">
             <h2>Data Manager</h2>
+            <div id="visit-stats-box" style="background:var(--surface-tint);border-radius:var(--radius-sm);padding:12px 14px;margin:14px 0 16px;font-size:12px;font-weight:600;color:var(--ink-soft);">방문 통계 불러오는 중...</div>
             <textarea id="bulk-json-input" placeholder="JSON data..." class="input" style="height:190px;font-family:monospace;font-size:11px;font-weight:400;margin-bottom:16px;"></textarea>
             <div class="grid grid-2 gap-3" style="margin-bottom:18px;">
                 <button onclick="importData()" class="btn btn-outline">Import</button>
@@ -843,7 +850,35 @@
             if (activeContent) activeContent.classList.remove('hidden');
         }
 
-        window.onload = () => { initMonthSelect(); fetchData(); renderPaceRefTable(); switchPage('home'); initHeroSlides(); };
+        window.onload = () => { initMonthSelect(); fetchData(); renderPaceRefTable(); switchPage('home'); initHeroSlides(); logVisit(); };
+
+        function logVisit() {
+            try {
+                fetch(`${DB_URL}/stats/visits.json`, {
+                    method: 'POST',
+                    body: JSON.stringify({ ts: Date.now(), date: new Date().toISOString().slice(0, 10) })
+                });
+            } catch (e) { /* 방문 로그 실패는 무시 */ }
+        }
+
+        async function loadVisitStats() {
+            const box = document.getElementById('visit-stats-box');
+            if (!box) return;
+            box.innerText = '방문 통계 불러오는 중...';
+            try {
+                const res = await fetch(`${DB_URL}/stats/visits.json`);
+                const data = await res.json();
+                const entries = data ? Object.values(data) : [];
+                const total = entries.length;
+                const todayStr = new Date().toISOString().slice(0, 10);
+                const todayCount = entries.filter(e => e.date === todayStr).length;
+                const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+                const weekCount = entries.filter(e => e.ts >= weekAgo).length;
+                box.innerHTML = `총 방문 <b>${total}</b>회 · 오늘 <b>${todayCount}</b>회 · 최근 7일 <b>${weekCount}</b>회`;
+            } catch (e) {
+                box.innerText = '방문 통계를 불러오지 못했습니다.';
+            }
+        }
 
         function initHeroSlides() {
             const slides = document.querySelectorAll('#hero-kv .hero-slide');
@@ -925,7 +960,8 @@
                 if (sec <= 10799) sub3++; else if (sec <= 11399) single++; else if (sec <= 12599) sub330++; else if (sec <= 14399) sub4++;
             });
             const getPer = (num) => Math.round((num / data.length) * 100);
-            statsContainer.innerHTML = `<span>SUB3: <b>${sub3}명 (${getPer(sub3)}%)</b></span><span>싱글: <b>${single}명 (${getPer(single)}%)</b></span><span>SUB330: <b>${sub330}명 (${getPer(sub330)}%)</b></span><span>SUB4: <b>${sub4}명 (${getPer(sub4)}%)</b></span>`;
+            const statItem = (label, num) => `<div class="stat-item"><p class="stat-label">${label}</p><p class="stat-value"><span class="stat-num">${num}명</span> <span class="stat-pct">(${getPer(num)}%)</span></p></div>`;
+            statsContainer.innerHTML = statItem('Sub3', sub3) + statItem('싱글', single) + statItem('Sub330', sub330) + statItem('Sub4', sub4);
         }
 
         function renderRecords() {
@@ -948,8 +984,9 @@
                 let rankNum = idx + 1;
                 const isTop3 = (sortDir === 1 && rankNum <= 3);
                 let rankLabel = `<span class="rank-badge ${isTop3 ? 'top3' : 'plain'}">${rankNum}</span>`;
-                const actionBtns = isSub3View ? '' : `<td class="center min-px"><div class="flex gap-2 justify-center"><button onclick="editAnyPBRecord('${r.name}')" class="btn-link-text">Edit</button><button onclick="deleteAnyPBRecord('${r.name}')" class="btn-danger-text">Del</button></div></td>`;
-                body.innerHTML += `<tr><td class="truncate">${rankLabel}${r.name}</td><td class="center" style="font-size:12px;">${r["5k"]}</td><td class="center" style="font-size:12px;">${r["10k"]}</td><td class="center" style="font-size:12px;">${r["half"]}</td><td class="center" style="font-size:13px;">${r["full"]}</td>${actionBtns}</tr>`;
+                const actionBtns = isSub3View ? '' : `<td class="center min-px"><div class="flex record-action-gap justify-center"><button onclick="editAnyPBRecord('${r.name}')" class="btn-link-text">Edit</button><button onclick="deleteAnyPBRecord('${r.name}')" class="btn-danger-text">Del</button></div></td>`;
+                const colCls = (key) => `center${sortKey === key ? ' is-sorted' : ''}`;
+                body.innerHTML += `<tr><td class="truncate">${rankLabel}${r.name}</td><td class="${colCls('5k')}" style="font-size:12px;">${r["5k"]}</td><td class="${colCls('10k')}" style="font-size:12px;">${r["10k"]}</td><td class="${colCls('half')}" style="font-size:12px;">${r["half"]}</td><td class="${colCls('full')}" style="font-size:12px;">${r["full"]}</td>${actionBtns}</tr>`;
             });
         }
 
@@ -1108,7 +1145,7 @@
 
 
         function checkAdminPassword() { const pwInput = prompt("Admin 비밀번호"); if (pwInput === ADMIN_PW) openAdminModal(); else if (pwInput) alert("틀림"); }
-        function openAdminModal() { document.getElementById('admin-modal').classList.remove('hidden'); }
+        function openAdminModal() { document.getElementById('admin-modal').classList.remove('hidden'); loadVisitStats(); }
         function closeAdminModal() { document.getElementById('admin-modal').classList.add('hidden'); }
 
         function openRaceModal() {
