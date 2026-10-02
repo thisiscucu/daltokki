@@ -161,6 +161,7 @@
         .btn-danger-text{ color:var(--danger); font-weight:700; font-size:12px; }
         .btn-link-text{ color:var(--ink); font-weight:700; font-size:12px; text-decoration:underline; text-underline-offset:2px; }
         .pill-btn{ background:var(--ink-sheen), var(--ink); color:#fff; border-radius:var(--pill); font-size:12px; font-weight:700; padding:0 16px; height:32px; display:inline-flex; align-items:center; justify-content:center; box-shadow:0 8px 18px -10px rgba(19,19,22,.45), inset 0 1px 0 rgba(255,255,255,.1); }
+        .pill-btn-danger{ background:var(--danger); color:#fff; border-radius:var(--pill); font-size:12px; font-weight:700; padding:0 16px; height:32px; display:inline-flex; align-items:center; justify-content:center; box-shadow:0 8px 18px -10px rgba(199,16,18,.4); }
         .icon-nav-btn{ color:var(--ink); font-size:18px; font-weight:600; padding:2px 8px; }
 
         /* ---------- calendar ---------- */
@@ -222,6 +223,8 @@
         .dialog-overlay{ position:fixed; inset:0; background:rgba(19,19,22,.5); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); z-index:70; display:flex; align-items:center; justify-content:center; padding:24px; }
         .dialog-card{ background:var(--surface); width:100%; max-width:400px; border-radius:var(--radius-lg); padding:30px; max-height:90vh; overflow-y:auto; box-shadow:0 30px 60px -20px rgba(19,19,22,.35); }
         .dialog-card h2{ margin:0 0 22px; font-weight:800; font-size:21px; color:var(--ink); letter-spacing:-.01em; }
+        .modal-title-row{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin:0 0 22px; }
+        .modal-title-row h2{ margin:0; }
 
         .segment{ display:flex; background:var(--surface-tint); border-radius:var(--pill); padding:4px; }
         .segment button{ flex:1; text-align:center; font-size:11px; font-weight:700; padding:10px 0; border-radius:var(--pill); color:var(--ink-soft); }
@@ -590,7 +593,7 @@
                         <th class="center" style="width:55px;" onclick="sortRecords('10k')"><span id="sort-10k">10K</span></th>
                         <th class="center" style="width:65px;" onclick="sortRecords('half')"><span id="sort-half">Half</span></th>
                         <th class="center" style="width:65px;" onclick="sortRecords('full')"><span id="sort-full" class="sort-active">Full</span></th>
-                        <th class="center min-px" style="width:60px;" id="th-action"></th>
+                        <th class="center min-px" style="width:40px;" id="th-action"></th>
                     </tr></thead>
                     <tbody id="record-body" class="record-font"></tbody>
                 </table>
@@ -735,7 +738,10 @@
 
     <div id="add-record-modal" class="dialog-overlay hidden">
         <div class="dialog-card">
-            <h2 id="rec-modal-title">PB 기록 추가</h2>
+            <div class="modal-title-row">
+                <h2 id="rec-modal-title">PB 기록 추가</h2>
+                <button id="rec-delete-btn" onclick="deleteAnyPBRecord()" class="pill-btn-danger hidden">삭제</button>
+            </div>
             <div class="flex flex-col gap-3" style="margin-bottom:22px;">
                 <input type="text" id="rec-name" placeholder="이름을 입력하세요" class="input">
                 <div class="grid grid-2 gap-3">
@@ -962,7 +968,7 @@
                 if (sec <= 10799) sub3++; else if (sec <= 11399) single++; else if (sec <= 12599) sub330++; else if (sec <= 14399) sub4++;
             });
             const getPer = (num) => Math.round((num / data.length) * 100);
-            const statItem = (label, num) => `<div class="stat-item"><p class="stat-label">${label}</p><p class="stat-value"><span class="stat-num">${num}명</span> <span class="stat-pct">(${getPer(num)}%)</span></p></div>`;
+            const statItem = (label, num) => `<div class="stat-item"><p class="stat-label">${label}</p><p class="stat-value"><span class="stat-num">${num}명</span><br><span class="stat-pct">(${getPer(num)}%)</span></p></div>`;
             statsContainer.innerHTML = statItem('Sub3', sub3) + statItem('싱글', single) + statItem('Sub330', sub330) + statItem('Sub4', sub4);
         }
 
@@ -986,18 +992,20 @@
                 let rankNum = idx + 1;
                 const isTop3 = (sortDir === 1 && rankNum <= 3);
                 let rankLabel = `<span class="rank-badge ${isTop3 ? 'top3' : 'plain'}">${rankNum}</span>`;
-                const actionBtns = isSub3View ? '' : `<td class="center min-px"><div class="flex record-action-gap justify-center"><button onclick="editAnyPBRecord('${r.name}')" class="btn-link-text">Edit</button><button onclick="deleteAnyPBRecord('${r.name}')" class="btn-danger-text">Del</button></div></td>`;
+                const actionBtns = isSub3View ? '' : `<td class="center min-px"><button onclick="editAnyPBRecord('${r.name}')" class="btn-link-text">Edit</button></td>`;
                 const colCls = (key) => `center${sortKey === key ? ' is-sorted' : ''}`;
                 body.innerHTML += `<tr><td class="truncate">${rankLabel}${r.name}</td><td class="${colCls('5k')}" style="font-size:12px;">${r["5k"]}</td><td class="${colCls('10k')}" style="font-size:12px;">${r["10k"]}</td><td class="${colCls('half')}" style="font-size:12px;">${r["half"]}</td><td class="${colCls('full')}" style="font-size:12px;">${r["full"]}</td>${actionBtns}</tr>`;
             });
         }
 
         function sortRecords(key) { sortDir = (sortKey === key) ? sortDir * -1 : 1; sortKey = key; renderRecords(); }
-        function openAddRecordModal() { document.getElementById('rec-modal-title').innerText = "PB 기록 추가"; document.getElementById('rec-name').value = ""; document.getElementById('rec-name').disabled = false; ['5k', '10k', 'half', 'full'].forEach(id => document.getElementById(`rec-${id}`).value = ""); document.getElementById('add-record-modal').classList.remove('hidden'); }
+        function openAddRecordModal() { document.getElementById('rec-modal-title').innerText = "PB 기록 추가"; document.getElementById('rec-name').value = ""; document.getElementById('rec-name').disabled = false; document.getElementById('rec-delete-btn').classList.add('hidden'); ['5k', '10k', 'half', 'full'].forEach(id => document.getElementById(`rec-${id}`).value = ""); document.getElementById('add-record-modal').classList.remove('hidden'); }
         function closeAddRecordModal() { document.getElementById('add-record-modal').classList.add('hidden'); }
-        function editAnyPBRecord(name) { const pb = getUnifiedPBData().find(r => r.name === name); if (!pb) return; document.getElementById('rec-modal-title').innerText = "PB 기록 수정"; document.getElementById('rec-name').value = name; document.getElementById('rec-name').disabled = true; ['5k', '10k', 'half', 'full'].forEach(k => document.getElementById(`rec-${k}`).value = pb[k] === "-" ? "" : pb[k]); document.getElementById('add-record-modal').classList.remove('hidden'); }
+        function editAnyPBRecord(name) { const pb = getUnifiedPBData().find(r => r.name === name); if (!pb) return; document.getElementById('rec-modal-title').innerText = "PB 기록 수정"; document.getElementById('rec-name').value = name; document.getElementById('rec-name').disabled = true; document.getElementById('rec-delete-btn').classList.remove('hidden'); ['5k', '10k', 'half', 'full'].forEach(k => document.getElementById(`rec-${k}`).value = pb[k] === "-" ? "" : pb[k]); document.getElementById('add-record-modal').classList.remove('hidden'); }
 
-        async function deleteAnyPBRecord(name) {
+        async function deleteAnyPBRecord() {
+            const name = document.getElementById('rec-name').value;
+            if (!name) return;
             if (!confirm(`${name}님의 기록을 삭제하시겠습니까?`)) return;
             const pwInput = prompt("삭제 비밀번호를 입력하세요.");
             if (pwInput !== MASTER_PW) { alert("비밀번호가 틀렸습니다."); return; }
@@ -1006,7 +1014,7 @@
                 const records = allData.records?.[p] || {};
                 const targetKey = Object.keys(records).find(k => k.trim() === name.trim());
                 if (targetKey) await fetch(`${DB_URL}/records/${p}/${encodeURIComponent(targetKey)}.json`, { method: 'DELETE' });
-            } fetchData();
+            } closeAddRecordModal(); fetchData();
         }
 
         async function saveUserRecord() { const name = document.getElementById('rec-name').value.trim(); if (!name) return alert("이름을 입력하세요!"); const paths = ["pb", "2026", "2025", "prev"]; for (const p of paths) { const records = allData.records?.[p] || {}; const oldKey = Object.keys(records).find(k => k.trim() === name); if (oldKey) await fetch(`${DB_URL}/records/${p}/${encodeURIComponent(oldKey)}.json`, { method: 'DELETE' }); } await fetch(`${DB_URL}/records/pb/${encodeURIComponent(name)}.json`, { method: 'PUT', body: JSON.stringify({ "5k": document.getElementById('rec-5k').value || "-", "10k": document.getElementById('rec-10k').value || "-", "half": document.getElementById('rec-half').value || "-", "full": document.getElementById('rec-full').value || "-" }) }); closeAddRecordModal(); fetchData(); }
