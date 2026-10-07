@@ -203,6 +203,15 @@
         .field-label{ font-size:11px; font-weight:700; color:var(--ink-soft); display:block; margin-bottom:7px; }
         .input, .select{ width:100%; background:var(--surface-tint); border:1.5px solid transparent; padding:13px 14px; border-radius:var(--radius-sm); outline:none; font-weight:600; color:var(--ink); transition:border-color .15s; }
         .input:focus, .select:focus{ border-color:var(--ink); }
+        .date-field{ position:relative; }
+        .date-field input[type=date]{ display:block; min-height:48px; text-align:left; }
+        .date-field .date-placeholder{ position:absolute; left:14px; top:50%; transform:translateY(-50%); pointer-events:none; display:none; font-weight:600; color:var(--ink-faint); }
+        .date-field.is-empty .date-placeholder{ display:block; }
+        .date-field.is-empty input[type=date]{ color:transparent; }
+        .date-field.is-empty input[type=date]::-webkit-datetime-edit{ color:transparent; }
+        .date-field.is-empty input[type=date]:focus{ color:var(--ink); }
+        .date-field.is-empty input[type=date]:focus::-webkit-datetime-edit{ color:var(--ink); }
+        .date-field.is-empty:focus-within .date-placeholder{ display:none; }
         .select{ appearance:none; -webkit-appearance:none; }
         .time-row{ display:flex; gap:6px; align-items:center; }
         .time-row input{ flex:1; text-align:center; }
@@ -265,9 +274,9 @@
         .record-tabs{ display:flex; gap:22px; overflow-x:auto; white-space:nowrap; font-size:13px; font-weight:800; color:var(--ink-faint); }
         .record-tabs button{ padding-bottom:8px; border-bottom:2.5px solid transparent; }
         .record-tabs button.tab-active{ color:var(--ink); border-bottom-color:var(--ink); }
-        .stat-row{ display:grid; grid-template-columns:repeat(4, 1fr); gap:10px 6px; border-top:1px solid var(--line); padding-top:14px; margin-top:8px; }
-        .stat-item{ min-width:0; }
-        .stat-label{ font-size:12px; font-weight:600; color:var(--ink-faint); margin:0 0 5px; white-space:nowrap; }
+        .stat-row{ display:grid; grid-template-columns:repeat(4, 1fr); gap:8px 6px; border-top:1px solid var(--line); padding:11px 10% 0; margin-top:8px; }
+        .stat-item{ min-width:0; text-align:center; }
+        .stat-label{ font-size:12px; font-weight:600; color:var(--ink-faint); margin:0 0 4px; white-space:nowrap; }
         .stat-value{ margin:0; white-space:nowrap; }
         .stat-num{ font-size:21px; font-weight:800; color:var(--ink); }
         .stat-pct{ font-size:12px; font-weight:700; color:var(--ink); }
@@ -286,6 +295,11 @@
         .rank-badge{ display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; border-radius:50%; font-size:10px; font-weight:800; margin-right:7px; flex-shrink:0; }
         .rank-badge.top3{ background:var(--ink-sheen), var(--ink); color:#fff; }
         .rank-badge.plain{ background:var(--surface-tint); color:var(--ink-faint); }
+        .rank-badge.tier{ width:38px; padding:0; border-radius:var(--pill); font-size:10px; letter-spacing:.02em; box-sizing:border-box; }
+        .rank-badge.tier-229{ background:#ccf455; color:var(--ink); }
+        .rank-badge.tier-239{ background:#a49ef4; color:var(--ink); }
+        .rank-badge.tier-249{ background:#6cc8fb; color:var(--ink); }
+        .rank-badge.tier-sub3{ background:#71f68b; color:var(--ink); }
         .sort-active{ background:var(--ink-sheen), var(--ink); color:#fff !important; border-radius:var(--pill); padding:3px 9px; white-space:nowrap; }
         .min-px{ padding-left:2px !important; padding-right:2px !important; }
 
@@ -574,7 +588,7 @@
             <div class="flex justify-between items-start">
                 <div class="sheet-tabs" id="record-tabs">
                     <button onclick="changeRecordTab('pb')" id="tab-pb" class="tab-active">Personal Best</button>
-                    <button onclick="changeRecordTab('sub3')" id="tab-sub3">Sub-3</button>
+                    <button onclick="changeRecordTab('sub3')" id="tab-sub3">Sub3</button>
                 </div>
                 <button onclick="openAddRecordModal()" class="pill-btn shrink-0" style="margin-top:14px;">기록 추가</button>
             </div>
@@ -778,7 +792,10 @@
                 <input type="text" id="new-race-name" placeholder="대회 명칭" class="input">
                 <input type="text" id="new-race-url" placeholder="대회 홈페이지 (URL)" class="input">
                 <input type="text" id="new-chat-url" placeholder="오픈채팅방 URL" class="input">
-                <input type="date" id="new-race-date" required class="input record-font">
+                <div class="date-field is-empty" id="new-race-date-wrap">
+                    <input type="date" id="new-race-date" required class="input record-font" oninput="syncDatePlaceholder()" onchange="syncDatePlaceholder()">
+                    <span class="date-placeholder">날짜를 입력하세요</span>
+                </div>
                 <div class="flex flex-wrap gap-2" id="course-checks">
                     <label class="badge" style="padding:8px 12px;"><input type="checkbox" value="5K"> 5K</label>
                     <label class="badge" style="padding:8px 12px;"><input type="checkbox" value="10K"> 10K</label>
@@ -960,8 +977,15 @@
 
         function updateMarathonStats(data) {
             const statsContainer = document.getElementById('marathon-stats');
-            if (currentRecordTab === 'sub3' || data.length === 0) { statsContainer.innerHTML = ''; statsContainer.classList.add('hidden'); return; }
+            if (data.length === 0) { statsContainer.innerHTML = ''; statsContainer.classList.add('hidden'); return; }
             statsContainer.classList.remove('hidden');
+            if (currentRecordTab === 'sub3') {
+                const cnt = { t229: 0, t239: 0, t249: 0, tsub3: 0 };
+                data.forEach(r => { const sec = timeToSeconds(r.full); if (sec < 9000) cnt.t229++; else if (sec < 9600) cnt.t239++; else if (sec < 10200) cnt.t249++; else cnt.tsub3++; });
+                const tierItem = (label, n) => `<div class="stat-item"><p class="stat-label">${label}</p><p class="stat-value"><span class="stat-num">${n}명</span></p></div>`;
+                statsContainer.innerHTML = tierItem('229', cnt.t229) + tierItem('239', cnt.t239) + tierItem('249', cnt.t249) + tierItem('259', cnt.tsub3);
+                return;
+            }
             let sub3 = 0, single = 0, sub330 = 0, sub4 = 0;
             data.forEach(r => {
                 const sec = timeToSeconds(r.full);
@@ -978,7 +1002,7 @@
             const isSub3View = (currentRecordTab === 'sub3');
             if (isSub3View) {
                 dataToShow = dataToShow.filter(r => timeToSeconds(r.full) <= 10799);
-                document.getElementById('record-count-label').innerText = `SUB3 Runners: ${dataToShow.length}`;
+                document.getElementById('record-count-label').innerText = `Sub3 Runners: ${dataToShow.length}`;
                 document.getElementById('th-action').style.display = 'none';
             } else {
                 document.getElementById('record-count-label').innerText = `Total Runners: ${dataToShow.length}`;
@@ -992,6 +1016,11 @@
                 let rankNum = idx + 1;
                 const isTop3 = (sortDir === 1 && rankNum <= 3);
                 let rankLabel = `<span class="rank-badge ${isTop3 ? 'top3' : 'plain'}">${rankNum}</span>`;
+                if (isSub3View) {
+                    const sec = timeToSeconds(r.full);
+                    const tier = sec < 9000 ? ['229', 'tier-229'] : sec < 9600 ? ['239', 'tier-239'] : sec < 10200 ? ['249', 'tier-249'] : ['259', 'tier-sub3'];
+                    rankLabel = `<span class="rank-badge tier ${tier[1]}">${tier[0]}</span>`;
+                }
                 const actionBtns = isSub3View ? '' : `<td class="center min-px"><button onclick="editAnyPBRecord('${r.name}')" class="btn-link-text">Edit</button></td>`;
                 const colCls = (key) => `center${sortKey === key ? ' is-sorted' : ''}`;
                 body.innerHTML += `<tr><td class="truncate">${rankLabel}${r.name}</td><td class="${colCls('5k')}" style="font-size:12px;">${r["5k"]}</td><td class="${colCls('10k')}" style="font-size:12px;">${r["10k"]}</td><td class="${colCls('half')}" style="font-size:12px;">${r["half"]}</td><td class="${colCls('full')}" style="font-size:12px;">${r["full"]}</td>${actionBtns}</tr>`;
@@ -1179,12 +1208,15 @@
             editingRaceId = null;
             document.getElementById('race-modal-title').innerText = "New Race";
             ['new-race-name', 'new-race-url', 'new-chat-url', 'new-race-date'].forEach(id => document.getElementById(id).value = "");
+            if (selectedDate) { const pts = selectedDate.split('-'); document.getElementById('new-race-date').value = `${pts[0]}-${pts[1].padStart(2, '0')}-${pts[2].padStart(2, '0')}`; }
+            syncDatePlaceholder();
             document.querySelectorAll('#course-checks input').forEach(c => c.checked = false);
             document.getElementById('race-modal').classList.remove('hidden');
         }
+        function syncDatePlaceholder() { const el = document.getElementById('new-race-date'); document.getElementById('new-race-date-wrap').classList.toggle('is-empty', !el.value); }
 
         function closeRaceModal() { document.getElementById('race-modal').classList.add('hidden'); }
-        function editRace(id) { editingRaceId = id; const r = allData.races[id]; document.getElementById('race-modal-title').innerText = "Edit Race"; document.getElementById('new-race-name').value = r.name; document.getElementById('new-race-url').value = r.url || ""; document.getElementById('new-chat-url').value = r.chatUrl || ""; document.getElementById('new-race-date').value = r.date; document.querySelectorAll('#course-checks input').forEach(c => c.checked = r.courses.includes(c.value)); document.getElementById('race-modal').classList.remove('hidden'); }
+        function editRace(id) { editingRaceId = id; const r = allData.races[id]; document.getElementById('race-modal-title').innerText = "Edit Race"; document.getElementById('new-race-name').value = r.name; document.getElementById('new-race-url').value = r.url || ""; document.getElementById('new-chat-url').value = r.chatUrl || ""; document.getElementById('new-race-date').value = r.date; syncDatePlaceholder(); document.querySelectorAll('#course-checks input').forEach(c => c.checked = r.courses.includes(c.value)); document.getElementById('race-modal').classList.remove('hidden'); }
         async function saveRace() { const n = document.getElementById('new-race-name').value; const d = document.getElementById('new-race-date').value; const cs = Array.from(document.querySelectorAll('#course-checks input:checked')).map(cb => cb.value); if (!n || !d || cs.length === 0) return alert('필수 입력'); const ext = editingRaceId ? `races/${editingRaceId}.json` : 'races.json'; await fetch(`${DB_URL}/${ext}`, { method: editingRaceId ? 'PATCH' : 'POST', body: JSON.stringify({ name: n, url: document.getElementById('new-race-url').value, chatUrl: document.getElementById('new-chat-url').value, date: d, courses: cs }) }); selectedDate = d; closeRaceModal(); fetchData(); }
         async function deleteRace(id) { const pwInput = prompt("삭제 암호"); if (pwInput !== MASTER_PW) return; await fetch(`${DB_URL}/races/${id}.json`, { method: 'DELETE' }); selectedDate = null; fetchData(); }
 
