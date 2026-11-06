@@ -76,7 +76,7 @@
         .app-scroll{ flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding-bottom:24px; }
 
         /* ---------- bottom nav ---------- */
-        .bottom-nav{ flex-shrink:0; position:relative; display:flex; background:rgba(255,255,255,.78); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border-top:1px solid var(--line); padding:6px 5px calc(17px + env(safe-area-inset-bottom)); border-radius:24px 24px 0 0; }
+        .bottom-nav{ flex-shrink:0; position:relative; display:flex; background:rgba(255,255,255,.78); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border-top:1px solid var(--line); padding:6px 5px calc(25px + env(safe-area-inset-bottom)); border-radius:24px 24px 0 0; }
         .nav-item{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; padding:5px 2px; color:var(--ink-faint); font-size:12px; font-weight:700; transition:color .15s; }
         .nav-item.active{ color:var(--ink); }
         .nav-icon{ width:26px; height:26px; display:flex; align-items:center; justify-content:center; }
@@ -142,11 +142,13 @@
 
         /* ---------- race scroller ---------- */
         .race-scroller{ display:flex; gap:10px; overflow-x:auto; padding:16px 16px 4px; }
-        .race-chip{ min-width:150px; background:var(--surface); border-radius:var(--radius-md); padding:14px; flex-shrink:0; box-shadow:var(--shadow-card); }
-        .race-chip .kind{ font-size:10px; font-weight:700; color:var(--ink-faint); margin-bottom:8px; }
+        .crew-notice{ margin:0 16px; background:var(--surface); border-radius:var(--radius-md); padding:12px 14px; box-shadow:var(--shadow-card); font-size:14px; font-weight:600; color:var(--ink-soft); line-height:1.5; word-break:break-word; }
+        .crew-notice-name{ font-weight:800; color:var(--ink); }
+        .race-chip{ min-width:150px; background:var(--surface); border-radius:var(--radius-md); padding:14px; flex-shrink:0; line-height:1.3; box-shadow:var(--shadow-card); }
+        .race-chip .kind{ font-size:10px; font-weight:700; color:var(--ink-faint); margin:0 0 4px; }
         .race-chip .kind.is-race{ color:var(--ink); }
-        .race-chip h4{ margin:0 0 5px; font-size:13px; font-weight:800; color:var(--ink); letter-spacing:-.01em; }
-        .race-chip .date{ font-size:11px; font-weight:600; color:var(--ink-faint); }
+        .race-chip h4{ margin:0 0 2px; font-size:13px; font-weight:800; color:var(--ink); letter-spacing:-.01em; }
+        .race-chip .date{ margin:0; font-size:11px; font-weight:600; color:var(--ink-faint); }
 
         /* ---------- card ---------- */
         .card{ background:var(--surface); border-radius:var(--radius-lg); padding:20px; box-shadow:var(--shadow-card); }
@@ -203,6 +205,29 @@
         .field-label{ font-size:11px; font-weight:700; color:var(--ink-soft); display:block; margin-bottom:7px; }
         .input, .select{ width:100%; background:var(--surface-tint); border:1.5px solid transparent; padding:13px 14px; border-radius:var(--radius-sm); outline:none; font-weight:600; color:var(--ink); transition:border-color .15s; }
         .input:focus, .select:focus{ border-color:var(--ink); }
+        .history-top{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:2px 2px 0; }
+        .history-prompt-wrap{ min-width:0; }
+        .history-prompt{ margin:0; font-size:14px; font-weight:800; color:var(--ink); line-height:1.4; letter-spacing:-.01em; white-space:nowrap; }
+        .history-subprompt{ margin:3px 0 0; font-size:11px; font-weight:600; color:var(--ink-faint); line-height:1.4; white-space:nowrap; }
+        .history-sort{ display:flex; gap:6px; margin:12px 0; }
+        .history-sort button{ padding:6px 13px; border-radius:var(--pill); font-size:12px; font-weight:700; color:var(--ink-faint); background:var(--surface-tint); }
+        .history-sort button.is-active{ background:var(--ink-sheen), var(--ink); color:#fff; }
+        .history-item{ background:var(--surface); border-radius:var(--radius-md); box-shadow:var(--shadow-card); overflow:hidden; }
+        .history-head{ width:100%; display:flex; align-items:center; justify-content:space-between; gap:12px; padding:16px 18px; text-align:left; }
+        .history-title{ font-size:14px; font-weight:800; color:var(--ink); min-width:0; word-break:break-word; }
+        .history-meta{ display:flex; align-items:center; gap:8px; flex-shrink:0; }
+        .history-date{ font-size:11px; font-weight:600; color:var(--ink-faint); }
+        .history-chevron{ width:8px; height:8px; border-right:2px solid var(--ink-faint); border-bottom:2px solid var(--ink-faint); transform:rotate(45deg); transition:transform .2s; margin-top:-3px; }
+        .history-item.is-open .history-chevron{ transform:rotate(-135deg); margin-top:3px; }
+        .history-item.is-open .history-head{ padding-bottom:4px; }
+        .history-actions{ display:flex; justify-content:flex-end; gap:10px; margin:0 0 8px; }
+        .history-actions button{ font-size:11px; font-weight:700; }
+        .history-actions .h-edit{ color:var(--ink); text-decoration:underline; text-underline-offset:2px; }
+        .history-actions .h-del{ color:var(--danger); }
+        .history-body{ display:none; padding:0 18px 18px; font-size:13px; font-weight:500; color:var(--ink-soft); line-height:1.65; word-break:break-word; }
+        .history-item.is-open .history-body{ display:block; }
+        .history-text{ white-space:pre-wrap; }
+        .history-empty{ text-align:center; font-size:12px; font-weight:600; color:var(--ink-faint); padding:28px 0; }
         .date-field{ position:relative; }
         .date-field input[type=date]{ display:block; min-height:48px; text-align:left; }
         .date-field .date-placeholder{ position:absolute; left:14px; top:50%; transform:translateY(-50%); pointer-events:none; display:none; font-weight:600; color:var(--ink-faint); }
@@ -292,14 +317,14 @@
         .rtable tbody td.center{ text-align:center; color:var(--ink-soft); font-weight:600; }
         .rtable tbody td.center.is-sorted{ color:var(--ink); font-weight:800; }
         .record-action-gap{ gap:3px; }
+        .stat-item.is-clickable{ cursor:pointer; -webkit-tap-highlight-color:transparent; }
+        .tier-card{ position:relative; max-width:320px; padding:24px 20px 22px; }
+        .tier-close{ position:absolute; top:12px; right:14px; width:28px; height:28px; display:flex; align-items:center; justify-content:center; font-size:20px; line-height:1; color:var(--ink-faint); }
+        .tier-card h2{ margin:0 0 16px; font-size:16px; }
+        .tier-grid{ display:grid; grid-template-columns:repeat(4, 1fr); gap:6px; text-align:center; }
         .rank-badge{ display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; border-radius:50%; font-size:10px; font-weight:800; margin-right:7px; flex-shrink:0; }
-        .rank-badge.top3{ background:var(--ink-sheen), var(--ink); color:#fff; }
-        .rank-badge.plain{ background:var(--surface-tint); color:var(--ink-faint); }
-        .rank-badge.tier{ width:38px; padding:0; border-radius:var(--pill); font-size:10px; letter-spacing:.02em; box-sizing:border-box; }
-        .rank-badge.tier-229{ background:#ccf455; color:var(--ink); }
-        .rank-badge.tier-239{ background:#a49ef4; color:var(--ink); }
-        .rank-badge.tier-249{ background:#6cc8fb; color:var(--ink); }
-        .rank-badge.tier-sub3{ background:#71f68b; color:var(--ink); }
+        .rank-badge.top3{ background:var(--ink-sheen), var(--accent-red); color:#fff; }
+        .rank-badge.plain{ background:var(--ink-sheen), var(--ink); color:#fff; }
         .sort-active{ background:var(--ink-sheen), var(--ink); color:#fff !important; border-radius:var(--pill); padding:3px 9px; white-space:nowrap; }
         .min-px{ padding-left:2px !important; padding-right:2px !important; }
 
@@ -344,6 +369,7 @@
         <div class="home-section-label">
             <h3 class="card-title" style="font-size:16px;">다가오는 일정</h3>
         </div>
+        <div id="crew-notice" class="crew-notice hidden"><span class="crew-notice-name">윤정📢</span> <span id="crew-notice-text"></span></div>
         <section class="race-scroller no-scroll" id="major-races"></section>
     </section>
 
@@ -588,17 +614,28 @@
             <div class="flex justify-between items-start">
                 <div class="sheet-tabs" id="record-tabs">
                     <button onclick="changeRecordTab('pb')" id="tab-pb" class="tab-active">Personal Best</button>
-                    <button onclick="changeRecordTab('sub3')" id="tab-sub3">Sub3</button>
+                    <button onclick="changeRecordTab('history')" id="tab-history">History</button>
                 </div>
-                <button onclick="openAddRecordModal()" class="pill-btn shrink-0" style="margin-top:14px;">기록 추가</button>
+                <button onclick="openAddRecordModal()" id="record-add-btn" class="pill-btn shrink-0" style="margin-top:14px;">기록 추가</button>
             </div>
         </div>
         <div class="sheet-body">
-            <div class="card" style="margin:16px 16px 0;padding:16px 18px;">
+            <div class="card" id="record-summary-card" style="margin:16px 16px 0;padding:16px 18px;">
                 <span id="record-count-label" class="eyebrow" style="display:block;">Total Runners: 0</span>
                 <div id="marathon-stats" class="stat-row"></div>
             </div>
-            <div class="record-card" style="margin:14px 16px 0;">
+            <div id="history-panel" class="hidden" style="margin:16px 16px 0;">
+                <div class="history-top">
+                    <div class="history-prompt-wrap"><p class="history-prompt">잊을 수 없는 우리의 기록을 공유해주세요</p><p class="history-subprompt">지나친 TMI는 삭제될 수 있습니다😊</p></div>
+                    <button onclick="openHistoryModal()" class="pill-btn shrink-0">추가</button>
+                </div>
+                <div class="history-sort" id="history-sort">
+                    <button onclick="setHistorySort('input')" id="history-sort-input" class="is-active">입력순</button>
+                    <button onclick="setHistorySort('date')" id="history-sort-date">날짜순</button>
+                </div>
+                <div id="history-list" class="flex flex-col gap-3"></div>
+            </div>
+            <div class="record-card" id="record-table-card" style="margin:14px 16px 0;">
                 <div class="record-scroll">
                 <table class="rtable">
                     <thead><tr>
@@ -677,9 +714,9 @@
                 </div>
                 <div class="card" style="margin:16px 16px 0;">
                     <h4 class="doc-h4">👑 1987달토끼 운영진 소개</h4>
-                    <div class="doc-staff-row"><span class="doc-staff-role">리더</span><span class="doc-staff-names">배윤정</span></div>
+                    <div class="doc-staff-row"><span class="doc-staff-role">리더</span><span class="doc-staff-names"><span onclick="checkLeaderPassword()">배윤정</span></span></div>
                     <div class="doc-staff-row"><span class="doc-staff-role">부리더</span><span class="doc-staff-names">천재민</span></div>
-                    <div class="doc-staff-row"><span class="doc-staff-role">운영진</span><span class="doc-staff-names">이우림, 홍미지, 김대협, <span onclick="checkAdminPassword()">이정관</span>, 최주희</span></div>
+                    <div class="doc-staff-row"><span class="doc-staff-role">운영진</span><span class="doc-staff-names">이우림, 홍미지, <span onclick="checkAdminPassword()">이정관</span>, 최주희</span></div>
                 </div>
             </div>
             <div id="more-content-newsletter" class="news-empty hidden">
@@ -772,15 +809,48 @@
         </div>
     </div>
 
+    <div id="history-modal" class="dialog-overlay hidden">
+        <div class="dialog-card">
+            <h2 id="history-modal-title">기록 공유</h2>
+            <div class="flex flex-col gap-3" style="margin-bottom:22px;">
+                <input type="text" id="history-title" placeholder="제목" maxlength="60" class="input">
+                <div class="date-field is-empty" id="history-date-wrap">
+                    <input type="date" id="history-date" class="input record-font" oninput="syncHistoryDate()" onchange="syncHistoryDate()">
+                    <span class="date-placeholder">날짜를 입력하세요</span>
+                </div>
+                <textarea id="history-content" placeholder="내용을 입력하세요" class="input" style="height:150px;resize:none;font-weight:500;line-height:1.55;"></textarea>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="closeHistoryModal()" class="btn-text flex-1 text-center" style="padding:14px 0;">Cancel</button>
+                <button onclick="saveHistory()" class="btn btn-primary flex-1">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="tier-modal" class="dialog-overlay hidden" onclick="if(event.target===this) closeTierModal()">
+        <div class="dialog-card tier-card">
+            <button class="tier-close" onclick="closeTierModal()" aria-label="닫기">×</button>
+            <h2 id="tier-modal-title">Sub3</h2>
+            <div class="tier-grid" id="tier-grid"></div>
+        </div>
+    </div>
+
+    <div id="notice-modal" class="dialog-overlay hidden">
+        <div class="dialog-card">
+            <h2>한 줄 공지</h2>
+            <p class="eyebrow" style="margin:-10px 0 12px;">홈 화면 일정 아래에 <b>윤정📢</b> 로 표시돼요. 비워서 저장하면 내려가요.</p>
+            <input type="text" id="notice-input" maxlength="60" placeholder="한 줄 내용을 입력하세요" class="input" style="margin-bottom:22px;">
+            <div class="flex gap-3">
+                <button onclick="closeNoticeModal()" class="btn-text flex-1 text-center" style="padding:14px 0;">Cancel</button>
+                <button onclick="saveNotice()" class="btn btn-primary flex-1">Save</button>
+            </div>
+        </div>
+    </div>
+
     <div id="admin-modal" class="dialog-overlay hidden" style="z-index:50;">
         <div class="dialog-card" style="max-width:440px;">
             <h2>Data Manager</h2>
             <div id="visit-stats-box" style="background:var(--surface-tint);border-radius:var(--radius-sm);padding:12px 14px;margin:14px 0 16px;font-size:12px;font-weight:600;color:var(--ink-soft);">방문 통계 불러오는 중...</div>
-            <textarea id="bulk-json-input" placeholder="JSON data..." class="input" style="height:190px;font-family:monospace;font-size:11px;font-weight:400;margin-bottom:16px;"></textarea>
-            <div class="grid grid-2 gap-3" style="margin-bottom:18px;">
-                <button onclick="importData()" class="btn btn-outline">Import</button>
-                <button onclick="exportData()" class="btn btn-primary">Export</button>
-            </div>
             <button onclick="closeAdminModal()" class="btn-text w-full text-center" style="display:block;padding:6px 0;">Close</button>
         </div>
     </div>
@@ -836,6 +906,7 @@
         const DB_URL = "https://runcal-80d30-default-rtdb.firebaseio.com";
         const MASTER_PW = "1987";
         const ADMIN_PW = "0248";
+        const LEADER_PW = "0248";
 
         let allData = { races: {}, participants: {}, records: {} };
         let currentYear = new Date().getFullYear();
@@ -945,7 +1016,59 @@
             } catch (e) { console.error("Fetch error", e); }
         }
 
-        function changeRecordTab(tab) { currentRecordTab = tab; document.querySelectorAll('#record-tabs button').forEach(b => b.classList.remove('tab-active')); document.getElementById('tab-' + tab).classList.add('tab-active'); renderRecords(); }
+        let historySort = 'input';
+        const historyOpen = new Set();
+        const escHtml = (t) => String(t == null ? '' : t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        function renderHistory() {
+            const list = document.getElementById('history-list');
+            const items = Object.entries(allData.history || {}).filter(([id, h]) => h && h.title);
+            if (historySort === 'date') items.sort((a, b) => (b[1].date || '').localeCompare(a[1].date || '') || (b[1].ts || 0) - (a[1].ts || 0));
+            else items.sort((a, b) => (b[1].ts || 0) - (a[1].ts || 0));
+            if (items.length === 0) { list.innerHTML = '<div class="history-empty">아직 공유된 기록이 없어요</div>'; return; }
+            list.innerHTML = items.map(([id, h]) => {
+                const open = historyOpen.has(id);
+                const d = (h.date || '').replace(/-/g, '.');
+                return `<div class="history-item${open ? ' is-open' : ''}"><button class="history-head" onclick="toggleHistory('${id}')"><span class="history-title">${escHtml(h.title)}</span><span class="history-meta"><span class="history-date">${escHtml(d)}</span><span class="history-chevron"></span></span></button><div class="history-body"><div class="history-actions"><button class="h-edit" onclick="editHistory('${id}')">Edit</button><button class="h-del" onclick="deleteHistory('${id}')">Del</button></div><div class="history-text">${escHtml(h.content)}</div></div></div>`;
+            }).join('');
+        }
+        function toggleHistory(id) { if (historyOpen.has(id)) historyOpen.delete(id); else historyOpen.add(id); renderHistory(); }
+        function setHistorySort(mode) { historySort = mode; document.getElementById('history-sort-input').classList.toggle('is-active', mode === 'input'); document.getElementById('history-sort-date').classList.toggle('is-active', mode === 'date'); renderHistory(); }
+        function syncHistoryDate() { document.getElementById('history-date-wrap').classList.toggle('is-empty', !document.getElementById('history-date').value); }
+        let editingHistoryId = null;
+        function openHistoryModal() { editingHistoryId = null; document.getElementById('history-modal-title').innerText = '기록 공유'; ['history-title', 'history-date', 'history-content'].forEach(id => document.getElementById(id).value = ''); syncHistoryDate(); document.getElementById('history-modal').classList.remove('hidden'); }
+        function editHistory(id) {
+            const h = (allData.history || {})[id]; if (!h) return;
+            const pwInput = prompt("수정 비밀번호를 입력하세요.");
+            if (pwInput === null) return;
+            if (pwInput !== MASTER_PW) { alert("비밀번호가 틀렸습니다."); return; }
+            editingHistoryId = id;
+            document.getElementById('history-modal-title').innerText = '기록 수정';
+            document.getElementById('history-title').value = h.title || '';
+            document.getElementById('history-date').value = h.date || '';
+            document.getElementById('history-content').value = h.content || '';
+            syncHistoryDate();
+            document.getElementById('history-modal').classList.remove('hidden');
+        }
+        async function deleteHistory(id) {
+            const h = (allData.history || {})[id]; if (!h) return;
+            if (!confirm(`"${h.title}" 기록을 삭제하시겠습니까?`)) return;
+            const pwInput = prompt("삭제 비밀번호를 입력하세요.");
+            if (pwInput !== MASTER_PW) { alert("비밀번호가 틀렸습니다."); return; }
+            await fetch(`${DB_URL}/history/${id}.json`, { method: 'DELETE' });
+            historyOpen.delete(id); fetchData();
+        }
+        function closeHistoryModal() { document.getElementById('history-modal').classList.add('hidden'); }
+        async function saveHistory() {
+            const title = document.getElementById('history-title').value.trim();
+            const date = document.getElementById('history-date').value;
+            const content = document.getElementById('history-content').value.trim();
+            if (!title || !date || !content) return alert('제목, 날짜, 내용을 모두 입력하세요!');
+            if (editingHistoryId) await fetch(`${DB_URL}/history/${editingHistoryId}.json`, { method: 'PATCH', body: JSON.stringify({ title, date, content }) });
+            else await fetch(`${DB_URL}/history.json`, { method: 'POST', body: JSON.stringify({ title, date, content, ts: Date.now() }) });
+            closeHistoryModal(); fetchData();
+        }
+
+        function changeRecordTab(tab) { currentRecordTab = tab; document.querySelectorAll('#record-tabs button').forEach(b => b.classList.remove('tab-active')); document.getElementById('tab-' + tab).classList.add('tab-active'); document.getElementById('record-add-btn').classList.toggle('hidden', tab === 'history'); renderRecords(); }
 
         function timeToSeconds(timeStr) {
             if (!timeStr || timeStr === '-' || timeStr.trim() === '') return 999999999;
@@ -975,39 +1098,40 @@
             return Object.entries(unified).map(([name, rec]) => ({ name, ...rec }));
         }
 
+        function openTierModal() {
+            const cnt = [0, 0, 0, 0];
+            getUnifiedPBData().forEach(r => { const sec = timeToSeconds(r.full); if (sec < 9000) cnt[0]++; else if (sec < 9600) cnt[1]++; else if (sec < 10200) cnt[2]++; else if (sec <= 10799) cnt[3]++; });
+            document.getElementById('tier-modal-title').innerText = `Sub3 · ${cnt.reduce((a, b) => a + b, 0)}명`;
+            document.getElementById('tier-grid').innerHTML = ['229', '239', '249', '259'].map((l, i) => `<div class="stat-item"><p class="stat-label">${l}</p><p class="stat-value"><span class="stat-num">${cnt[i]}명</span></p></div>`).join('');
+            document.getElementById('tier-modal').classList.remove('hidden');
+        }
+        function closeTierModal() { document.getElementById('tier-modal').classList.add('hidden'); }
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeTierModal(); });
+
         function updateMarathonStats(data) {
             const statsContainer = document.getElementById('marathon-stats');
             if (data.length === 0) { statsContainer.innerHTML = ''; statsContainer.classList.add('hidden'); return; }
             statsContainer.classList.remove('hidden');
-            if (currentRecordTab === 'sub3') {
-                const cnt = { t229: 0, t239: 0, t249: 0, tsub3: 0 };
-                data.forEach(r => { const sec = timeToSeconds(r.full); if (sec < 9000) cnt.t229++; else if (sec < 9600) cnt.t239++; else if (sec < 10200) cnt.t249++; else cnt.tsub3++; });
-                const tierItem = (label, n) => `<div class="stat-item"><p class="stat-label">${label}</p><p class="stat-value"><span class="stat-num">${n}명</span></p></div>`;
-                statsContainer.innerHTML = tierItem('229', cnt.t229) + tierItem('239', cnt.t239) + tierItem('249', cnt.t249) + tierItem('259', cnt.tsub3);
-                return;
-            }
             let sub3 = 0, single = 0, sub330 = 0, sub4 = 0;
             data.forEach(r => {
                 const sec = timeToSeconds(r.full);
                 if (sec <= 10799) sub3++; else if (sec <= 11399) single++; else if (sec <= 12599) sub330++; else if (sec <= 14399) sub4++;
             });
             const getPer = (num) => Math.round((num / data.length) * 100);
-            const statItem = (label, num) => `<div class="stat-item"><p class="stat-label">${label}</p><p class="stat-value"><span class="stat-num">${num}명</span><br><span class="stat-pct">(${getPer(num)}%)</span></p></div>`;
-            statsContainer.innerHTML = statItem('Sub3', sub3) + statItem('싱글', single) + statItem('Sub330', sub330) + statItem('Sub4', sub4);
+            const statItem = (label, num, clickAttr = '') => `<div class="stat-item${clickAttr ? ' is-clickable' : ''}"${clickAttr}><p class="stat-label">${label}</p><p class="stat-value"><span class="stat-num">${num}명</span><br><span class="stat-pct">(${getPer(num)}%)</span></p></div>`;
+            statsContainer.innerHTML = statItem('Sub3', sub3, ' onclick="openTierModal()"') + statItem('싱글', single) + statItem('Sub330', sub330) + statItem('Sub4', sub4);
         }
 
         function renderRecords() {
+            const isHistoryView = (currentRecordTab === 'history');
+            document.getElementById('history-panel').classList.toggle('hidden', !isHistoryView);
+            document.getElementById('record-summary-card').classList.toggle('hidden', isHistoryView);
+            document.getElementById('record-table-card').classList.toggle('hidden', isHistoryView);
+            if (isHistoryView) { renderHistory(); return; }
             const body = document.getElementById('record-body'); body.innerHTML = '';
             let dataToShow = getUnifiedPBData();
-            const isSub3View = (currentRecordTab === 'sub3');
-            if (isSub3View) {
-                dataToShow = dataToShow.filter(r => timeToSeconds(r.full) <= 10799);
-                document.getElementById('record-count-label').innerText = `Sub3 Runners: ${dataToShow.length}`;
-                document.getElementById('th-action').style.display = 'none';
-            } else {
-                document.getElementById('record-count-label').innerText = `Total Runners: ${dataToShow.length}`;
-                document.getElementById('th-action').style.display = 'table-cell';
-            }
+            document.getElementById('record-count-label').innerText = `Total Runners: ${dataToShow.length}`;
+            document.getElementById('th-action').style.display = 'table-cell';
             updateMarathonStats(dataToShow);
             document.querySelectorAll('th span').forEach(el => el.classList.remove('sort-active'));
             document.getElementById('sort-' + sortKey).classList.add('sort-active');
@@ -1016,12 +1140,7 @@
                 let rankNum = idx + 1;
                 const isTop3 = (sortDir === 1 && rankNum <= 3);
                 let rankLabel = `<span class="rank-badge ${isTop3 ? 'top3' : 'plain'}">${rankNum}</span>`;
-                if (isSub3View) {
-                    const sec = timeToSeconds(r.full);
-                    const tier = sec < 9000 ? ['229', 'tier-229'] : sec < 9600 ? ['239', 'tier-239'] : sec < 10200 ? ['249', 'tier-249'] : ['259', 'tier-sub3'];
-                    rankLabel = `<span class="rank-badge tier ${tier[1]}">${tier[0]}</span>`;
-                }
-                const actionBtns = isSub3View ? '' : `<td class="center min-px"><button onclick="editAnyPBRecord('${r.name}')" class="btn-link-text">Edit</button></td>`;
+                const actionBtns = `<td class="center min-px"><button onclick="editAnyPBRecord('${r.name}')" class="btn-link-text">Edit</button></td>`;
                 const colCls = (key) => `center${sortKey === key ? ' is-sorted' : ''}`;
                 body.innerHTML += `<tr><td class="truncate">${rankLabel}${r.name}</td><td class="${colCls('5k')}" style="font-size:12px;">${r["5k"]}</td><td class="${colCls('10k')}" style="font-size:12px;">${r["10k"]}</td><td class="${colCls('half')}" style="font-size:12px;">${r["half"]}</td><td class="${colCls('full')}" style="font-size:12px;">${r["full"]}</td>${actionBtns}</tr>`;
             });
@@ -1066,7 +1185,7 @@
         }
 
         function changeYear() { currentYear = parseInt(document.getElementById('year-select').value); selectedDate = null; expandedRaceId = null; selectedRaceId = null; renderAll(); renderScheduleDetail(); }
-        function renderAll() { renderCalendar(); renderMajorCards(); }
+        function renderAll() { renderCalendar(); renderMajorCards(); renderNotice(); }
         function renderCalendar() { const container = document.getElementById('calendar-days'); container.innerHTML = ''; const firstDay = new Date(currentYear, currentMonth - 1, 1).getDay(); const lastDate = new Date(currentYear, currentMonth, 0).getDate(); for (let i = 0; i < firstDay; i++) container.innerHTML += `<div></div>`; for (let i = 1; i <= lastDate; i++) { const dateStr = `${currentYear}-${currentMonth}-${i}`; const racesForDay = Object.values(allData.races || {}).filter(r => isSameDate(r.date, dateStr)); let hasRace = racesForDay.some(r => r.courses && r.courses.some(c => c !== "기타")); let hasEvent = racesForDay.some(r => r.courses && r.courses.length === 1 && r.courses[0] === "기타"); const now = new Date(); const todayStr = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`; let isToday = isSameDate(dateStr, todayStr); let isSelected = isSameDate(dateStr, selectedDate); let numClass = isToday ? "is-today" : (isSelected ? "is-selected" : ""); container.innerHTML += `<div onclick="onDayCellClick('${dateStr}')" class="day-cell"><span class="day-num ${numClass}">${i}</span><div class="day-dots">${hasRace ? '<span class="dot dot-accent"></span>' : ''}${hasEvent ? '<span class="dot dot-muted"></span>' : ''}</div></div>`; } }
         function renderMajorCards() { const container = document.getElementById('major-races'); container.innerHTML = ''; const now = new Date(); const todayStr = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`; const sortedRaces = Object.entries(allData.races || {}).sort((a, b) => { const partsA = a[1].date.split('-').map(v => parseInt(v)); const partsB = b[1].date.split('-').map(v => parseInt(v)); return (partsA[0] - partsB[0]) || (partsA[1] - partsB[1]) || (partsA[2] - partsB[2]); }); let firstFutureIndex = -1; sortedRaces.forEach(([id, race], index) => { const isEventOnly = race.courses && race.courses.length === 1 && race.courses[0] === "기타"; const nowParts = todayStr.split('-').map(Number); const raceParts = race.date.split('-').map(Number); const isPast = (raceParts[0] < nowParts[0]) || (raceParts[0] === nowParts[0] && raceParts[1] < nowParts[1]) || (raceParts[0] === nowParts[0] && raceParts[1] === nowParts[1] && raceParts[2] < nowParts[2]); if (firstFutureIndex === -1 && !isPast) firstFutureIndex = index; container.innerHTML += `<div id="card-${index}" onclick="switchPage('schedule'); showDayDetail('${race.date}', true)" class="race-chip ${isPast ? 'opacity-40' : ''}"><p class="kind ${isEventOnly ? 'is-event' : 'is-race'}">${isEventOnly ? 'Event' : 'Race'}</p><h4 class="truncate">${race.name}</h4><p class="date">${race.date}</p></div>`; }); if (firstFutureIndex !== -1) setTimeout(() => { const card = document.getElementById(`card-${firstFutureIndex}`); if (card) container.scrollLeft = card.offsetLeft - 20; }, 100); }
 
@@ -1200,6 +1319,20 @@
         }
 
 
+        function renderNotice() {
+            const n = allData.notice, box = document.getElementById('crew-notice');
+            const text = n && n.text ? String(n.text).trim() : '';
+            box.classList.toggle('hidden', !text);
+            document.getElementById('crew-notice-text').textContent = text ? `"${text}"` : '';
+        }
+        function checkLeaderPassword() { const pwInput = prompt("비밀번호"); if (pwInput === null || pwInput === '') return; if (pwInput !== LEADER_PW) { alert("틀림"); return; } document.getElementById('notice-input').value = (allData.notice && allData.notice.text) || ''; document.getElementById('notice-modal').classList.remove('hidden'); }
+        function closeNoticeModal() { document.getElementById('notice-modal').classList.add('hidden'); }
+        async function saveNotice() {
+            const text = document.getElementById('notice-input').value.trim();
+            if (text) await fetch(`${DB_URL}/notice.json`, { method: 'PUT', body: JSON.stringify({ text, ts: Date.now() }) });
+            else await fetch(`${DB_URL}/notice.json`, { method: 'DELETE' });
+            closeNoticeModal(); fetchData();
+        }
         function checkAdminPassword() { const pwInput = prompt("Admin 비밀번호"); if (pwInput === ADMIN_PW) openAdminModal(); else if (pwInput) alert("틀림"); }
         function openAdminModal() { document.getElementById('admin-modal').classList.remove('hidden'); loadVisitStats(); }
         function closeAdminModal() { document.getElementById('admin-modal').classList.add('hidden'); }
@@ -1239,17 +1372,6 @@
         function closeJoinModal() { document.getElementById('join-modal').classList.add('hidden'); }
         async function addParticipant() { const n = document.getElementById('user-name').value; const c = document.getElementById('user-course').value; if (!n || !c) return; await fetch(`${DB_URL}/participants.json`, { method: 'POST', body: JSON.stringify({ raceId: activeRaceId, name: n, gender: document.querySelector('input[name="gender"]:checked').value, course: c }) }); closeJoinModal(); fetchData(); }
         async function deleteParticipant(pid) { const pwInput = prompt("삭제 암호"); if (pwInput !== MASTER_PW) return; await fetch(`${DB_URL}/participants/${pid}.json`, { method: 'DELETE' }); fetchData(); }
-        async function importData() { const raw = document.getElementById('bulk-json-input').value; if (!raw) return; try { const d = JSON.parse(raw); if (confirm("업로드?")) { await fetch(`${DB_URL}/.json`, { method: 'PUT', body: JSON.stringify(d) }); location.reload(); } } catch (e) { alert("오류"); } }
-        function exportData() {
-            let csv = "﻿구분,이름,날짜/코스,URL\n";
-            Object.values(allData.races || {}).forEach(r => csv += `대회,${r.name},${r.date},${r.url}\n`);
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const l = document.createElement("a");
-            l.href = URL.createObjectURL(blob);
-            l.download = "daltokki.csv";
-            l.click();
-        }
-
         // ==================== LAB ====================
         let currentLabTab = 'pace';
         let currentPaceMode = 'pace';
