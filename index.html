@@ -630,8 +630,8 @@
                     <button onclick="openHistoryModal()" class="pill-btn shrink-0">추가</button>
                 </div>
                 <div class="history-sort" id="history-sort">
-                    <button onclick="setHistorySort('input')" id="history-sort-input" class="is-active">입력순</button>
-                    <button onclick="setHistorySort('date')" id="history-sort-date">날짜순</button>
+                    <button onclick="setHistorySort('input')" id="history-sort-input">입력순</button>
+                    <button onclick="setHistorySort('date')" id="history-sort-date" class="is-active">날짜순</button>
                 </div>
                 <div id="history-list" class="flex flex-col gap-3"></div>
             </div>
@@ -1016,7 +1016,7 @@
             } catch (e) { console.error("Fetch error", e); }
         }
 
-        let historySort = 'input';
+        let historySort = 'date';
         const historyOpen = new Set();
         const escHtml = (t) => String(t == null ? '' : t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
         function renderHistory() {
